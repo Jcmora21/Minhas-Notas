@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minhas Notas</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        h1 {
+            color: #4CAF50;
+        }
+        .notas {
+            display: none;
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        .nota {
+            margin-bottom: 20px;
+            padding: 10px;
+            border-left: 4px solid #4CAF50;
+        }
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 0.8em;
+        }
+        .criar-nota {
+            margin: 20px 0;
+            text-align: center;
+        }
+        .nota button {
+            margin-right: 10px;
+        }
+    </style>
+    <script>
+        function mostrarNotas() {
+            const notaInput = document.getElementById('notaInput');
+            const notasContainer = document.getElementById('notasContainer');
+
+            if (notaInput.value.trim() !== "") {
+                const novaNota = document.createElement('div');
+                novaNota.className = 'nota';
+                novaNota.innerHTML = `<h2>Título da Nota</h2><p>${notaInput.value}</p>
+                    <button onclick="editarNota(this)">Editar</button>
+                    <button onclick="eliminarNota(this)">Eliminar</button>`;
+                
+                notasContainer.appendChild(novaNota);
+                notaInput.value = ""; // Limpa o input
+                notasContainer.style.display = "block"; // Mostra o container de notas
+            }
+        }
+
+        function editarNota(button) {
+            const nota = button.parentElement;
+            const conteudo = nota.querySelector('p');
+            const novoConteudo = prompt("Edite sua nota:", conteudo.innerText);
+
+            if (novoConteudo !== null && novoConteudo.trim() !== "") {
+                conteudo.innerText = novoConteudo;
+            }
+        }
+
+        function eliminarNota(button) {
+            const nota = button.parentElement;
+            nota.remove(); // Remove a nota do DOM
+        }
+    </script>
+</head>
+<body>
+    <header>
+        <h1>Minhas Notas</h1>
+    </header>
+
+    <div class="criar-nota">
+        <h2>Criar Notas</h2>
+        <input type="text" id="notaInput" placeholder="Escreva sua nota aqui..." />
+        <button onclick="mostrarNotas()">Adicionar Nota</button>
+    </div>
+
+    <div id="notasContainer" class="notas">
+        <!-- As notas serão adicionadas aqui -->
+    </div>
+
+    <footer>
+        <p>&copy; 2024 Minhas Notas</p>
+    </footer>
+</body>
+</html>
