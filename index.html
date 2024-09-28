@@ -156,6 +156,7 @@
                 <button onclick="confirmarEliminacao(this)">Eliminar</button>
                 <div class="bloquear-input">
                     <button onclick="bloquearNota(this)">Bloquear Nota</button>
+                    <button onclick="alterarCodigo(this)">Alterar Código</button>
                 </div>`;
             novaNota.dataset.codigo = codigo; // Salva o código da nota
             notasContainer.appendChild(novaNota);
@@ -272,16 +273,37 @@
 
         function bloquearNota(button) {
             const nota = button.parentElement.parentElement;
-            const codigoInput = prompt("Defina um código para bloquear esta nota (até 12 dígitos, sem espaços):").trim();
+            const codigoInput = prompt("Defina um código para bloquear esta nota (mínimo 4 e máximo 12 dígitos, sem espaços):").trim();
 
-            if (codigoInput.length === 0 || codigoInput.length > 12 || /\s/.test(codigoInput)) {
-                alert("Código inválido! Deve ter até 12 dígitos e não conter espaços.");
+            if (codigoInput.length < 4 || codigoInput.length > 12 || /\s/.test(codigoInput)) {
+                alert("Código inválido! Deve ter entre 4 e 12 dígitos e não conter espaços.");
                 return;
             }
 
             nota.dataset.codigo = codigoInput;
             mostrarMensagem("Nota bloqueada com sucesso!");
             atualizarNotasLocalStorage(); // Atualiza o armazenamento local após bloquear a nota
+        }
+
+        function alterarCodigo(button) {
+            const nota = button.parentElement.parentElement;
+            const codigoAtual = nota.dataset.codigo;
+
+            const codigoInput = prompt("Insira o código atual para alterar:", codigoAtual);
+            if (codigoInput !== codigoAtual) {
+                alert("Código incorreto! Tente novamente.");
+                return;
+            }
+
+            const novoCodigo = prompt("Defina um novo código (mínimo 4 e máximo 12 dígitos, sem espaços):").trim();
+            if (novoCodigo.length < 4 || novoCodigo.length > 12 || /\s/.test(novoCodigo)) {
+                alert("Código inválido! Deve ter entre 4 e 12 dígitos e não conter espaços.");
+                return;
+            }
+
+            nota.dataset.codigo = novoCodigo;
+            mostrarMensagem("Código alterado com sucesso!");
+            atualizarNotasLocalStorage(); // Atualiza o armazenamento local após alterar o código
         }
 
         function atualizarNotasLocalStorage() {
@@ -321,7 +343,7 @@
     <div id="mensagem" class="mensagem"></div>
 
     <footer>
-        <p>Notepointz</p>
+        <p>&copy; Notepointz</p>
     </footer>
 </body>
 </html>
