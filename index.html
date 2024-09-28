@@ -153,7 +153,8 @@
             novaNota.innerHTML = `<h2>${titulo}</h2><p>${conteudo}</p>
                 <button onclick="editarNota(this)">Editar</button>
                 <button onclick="confirmarEliminacao(this)">Eliminar</button>
-                <button class="bloquear" style="display: ${codigo ? 'none' : 'inline-block'};" onclick="bloquearNota(this)">Bloquear Nota</button>`;
+                <button class="bloquear" style="display: ${codigo ? 'none' : 'inline-block'};" onclick="bloquearNota(this)">Bloquear Nota</button>
+                <button class="alterar-codigo" style="display: ${codigo ? 'inline-block' : 'none'};" onclick="alterarCodigo(this)">Alterar Código</button>`;
             notasContainer.appendChild(novaNota);
         }
 
@@ -237,11 +238,8 @@
             if (codigo) {
                 mostrarCampoCodigo(codigo, 'eliminar', notaParaEliminar);
             } else {
-                document.getElementById('confirmacaoMensagem').innerText = "Tem a certeza que quer eliminar esta nota?";
+                document.getElementById('confirmacaoMensagem').innerText = "Tem certeza que deseja eliminar esta nota?";
                 document.getElementById('confirmacao').style.display = 'block';
-
-                // Alterar o evento do botão "Sim"
-                document.querySelector('.confirmacao .sim').onclick = eliminarNota;
             }
         }
 
@@ -269,10 +267,10 @@
         }
 
         function validarCodigo() {
-            const codigoInput = document.getElementById('codigoInput').value;
+            const codigoInput = document.getElementById('codigoInput').value.trim();
 
-            if (codigoInput.length > 12) {
-                alert("O código deve ter até 12 dígitos.");
+            if (codigoInput.length > 12 || codigoInput.includes(' ')) {
+                alert("O código deve ter até 12 dígitos e não pode conter espaços.");
                 return;
             }
 
@@ -285,7 +283,7 @@
                     }
                     fecharCampoCodigo();
                 } else {
-                    alert("Código incorreto!");
+                    alert("Código incorreto, tente novamente!");
                 }
             }
         }
@@ -294,13 +292,35 @@
             const nota = button.parentElement;
             const codigo = prompt("Defina um código de até 12 dígitos para bloquear esta nota:");
 
-            if (codigo && codigo.length <= 12) {
+            if (codigo && codigo.length <= 12 && !codigo.includes(' ')) {
                 nota.setAttribute('data-codigo', codigo);
                 button.style.display = 'none'; // Oculta o botão de bloquear após bloquear a nota
                 mostrarMensagem("Nota bloqueada com sucesso!");
                 atualizarNotasLocalStorage(); // Atualiza o LocalStorage
+                const alterarButton = nota.querySelector('.alterar-codigo');
+                alterarButton.style.display = 'inline-block'; // Mostra o botão de alterar código
             } else {
-                alert("Código deve ter até 12 dígitos!");
+                alert("Código deve ter até 12 dígitos e não pode conter espaços!");
+            }
+        }
+
+        function alterarCodigo(button) {
+            const nota = button.parentElement;
+            const codigoAtual = nota.getAttribute('data-codigo');
+            const codigoInputAtual = prompt("Insira o código atual:");
+
+            if (codigoInputAtual === codigoAtual) {
+                const novoCodigo = prompt("Defina um novo código de até 12 dígitos:");
+
+                if (novoCodigo && novoCodigo.length <= 12 && !novoCodigo.includes(' ')) {
+                    nota.setAttribute('data-codigo', novoCodigo);
+                    mostrarMensagem("Código alterado com sucesso!");
+                    atualizarNotasLocalStorage(); // Atualiza o LocalStorage
+                } else {
+                    alert("Novo código deve ter até 12 dígitos e não pode conter espaços!");
+                }
+            } else {
+                alert("Código incorreto, tente novamente!");
             }
         }
 
