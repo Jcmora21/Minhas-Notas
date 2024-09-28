@@ -224,15 +224,19 @@
             notaParaEliminar = button.parentElement;
             document.getElementById('confirmacaoMensagem').innerText = "Tem a certeza que quer eliminar esta nota?";
             document.getElementById('confirmacao').style.display = 'block';
+
+            // Alterar o evento do botão "Sim"
+            document.querySelector('.confirmacao .sim').onclick = eliminarNota;
         }
 
         function eliminarNota() {
             if (notaParaEliminar) {
+                notaParaEliminar.remove(); // Remove a nota do DOM
                 const titulo = notaParaEliminar.querySelector('h2').innerText;
                 const conteudo = notaParaEliminar.querySelector('p').innerText;
 
-                notaParaEliminar.remove();
-                atualizarNotasLocalStorage(titulo, conteudo);
+                atualizarNotasLocalStorage(titulo, conteudo); // Atualiza o LocalStorage
+
                 mostrarMensagem("Nota eliminada com sucesso!");
                 notaParaEliminar = null; // Resetar a variável
             }
