@@ -138,6 +138,7 @@
     <script>
         // Variável para armazenar o contexto de qual pergunta está sendo feita (título ou conteúdo)
         let confirmacaoTipo = "";
+        let notaParaEliminar = null; // Variável para armazenar a nota a ser eliminada
 
         // Função para carregar as notas do LocalStorage
         function carregarNotas() {
@@ -152,7 +153,7 @@
             novaNota.className = 'nota';
             novaNota.innerHTML = `<h2>${titulo}</h2><p>${conteudo}</p>
                 <button onclick="editarNota(this)">Editar</button>
-                <button onclick="eliminarNota(this)">Eliminar</button>`;
+                <button onclick="confirmarEliminacao(this)">Eliminar</button>`;
             notasContainer.appendChild(novaNota);
         }
 
@@ -235,27 +236,32 @@
             }
         }
 
-        // Função para eliminar uma nota
-        function eliminarNota(button) {
-            const nota = button.parentElement;
-            nota.remove();
-
-            // Atualizar o LocalStorage
-            atualizarNotasLocalStorage();
+        // Função para confirmar a eliminação da nota
+        function confirmarEliminacao(button) {
+            notaParaEliminar = button.parentElement;
+            document.getElementById('confirmacaoMensagem').innerText = "Tem a certeza que quer eliminar esta nota?";
+            document.getElementById('confirmacao').style.display = 'block';
         }
 
-        // Função para atualizar todas as notas no LocalStorage
+        // Função para eliminar uma nota
+        function eliminarNota() {
+            if (notaParaEliminar) {
+                notaParaEliminar.remove();
+                atualizarNotasLocalStorage();
+                mostrarMensagem("Nota eliminada com sucesso!");
+                notaParaEliminar = null; // Resetar a variável
+            }
+            fecharConfirmacao();
+        }
+
+        // Função para atualizar o LocalStorage
         function atualizarNotasLocalStorage() {
-            const notasAtualizadas = [];
-            const notas = document.querySelectorAll('.nota');
-
-            notas.forEach(nota => {
-                const titulo = nota.querySelector('h2').innerText;
-                const conteudo = nota.querySelector('p').innerText;
-                notasAtualizadas.push({ titulo: titulo, conteudo: conteudo });
-            });
-
-            localStorage.setItem('notas', JSON.stringify(notasAtualizadas));
+            const notasContainer = document.getElementById('notasContainer');
+            const notas = Array.from(notasContainer.children).map(nota => ({
+                titulo: nota.querySelector('h2').innerText,
+                conteudo: nota.querySelector('p').innerText
+            }));
+            localStorage.setItem('notas', JSON.stringify(notas));
         }
 
         // Função para mostrar mensagem de sucesso
@@ -295,7 +301,7 @@
     <div id="confirmacao" class="confirmacao">
         <p id="confirmacaoMensagem"></p>
         <button class="sim" onclick="confirmarSim()">Sim</button>
-        <button class="nao" onclick="fecharConfirmacao()">Não</button>
+        <button class="nao" onclick="eliminarNota()">Não</button>
     </div>
 
     <footer>
