@@ -141,7 +141,6 @@
     <script>
         let confirmacaoTipo = "";
         let notaParaEliminar = null;
-        let codigoNota = "";
 
         function carregarNotas() {
             const notasSalvas = JSON.parse(localStorage.getItem('notas')) || [];
@@ -156,7 +155,6 @@
                 <button onclick="editarNota(this)">Editar</button>
                 <button onclick="confirmarEliminacao(this)">Eliminar</button>
                 <div class="bloquear-input">
-                    <input type="text" placeholder="Código (opcional)" maxlength="12" onkeypress="return event.charCode < 48 || event.charCode > 57" />
                     <button onclick="bloquearNota(this)">Bloquear Nota</button>
                 </div>`;
             novaNota.dataset.codigo = codigo; // Salva o código da nota
@@ -183,18 +181,12 @@
         }
 
         function salvarNota(titulo, conteudo) {
-            const codigo = prompt("Defina um código de até 12 dígitos (sem espaços):");
-            if (!codigo || codigo.length > 12 || /\s/.test(codigo)) {
-                alert("Código inválido! Deve ter até 12 dígitos e não conter espaços.");
-                return;
-            }
-
             if (titulo === "") titulo = "Nota sem título";
             if (conteudo === "") conteudo = "(sem conteúdo)";
 
-            adicionarNota(titulo, conteudo, codigo);
+            adicionarNota(titulo, conteudo, ""); // Não pede código ao criar
             const notasSalvas = JSON.parse(localStorage.getItem('notas')) || [];
-            notasSalvas.push({ titulo: titulo, conteudo: conteudo, codigo: codigo });
+            notasSalvas.push({ titulo: titulo, conteudo: conteudo, codigo: "" });
             localStorage.setItem('notas', JSON.stringify(notasSalvas));
 
             document.getElementById('tituloInput').value = "";
@@ -280,7 +272,7 @@
 
         function bloquearNota(button) {
             const nota = button.parentElement.parentElement;
-            const codigoInput = button.previousElementSibling.value.trim();
+            const codigoInput = prompt("Defina um código para bloquear esta nota (até 12 dígitos, sem espaços):").trim();
 
             if (codigoInput.length === 0 || codigoInput.length > 12 || /\s/.test(codigoInput)) {
                 alert("Código inválido! Deve ter até 12 dígitos e não conter espaços.");
@@ -289,6 +281,7 @@
 
             nota.dataset.codigo = codigoInput;
             mostrarMensagem("Nota bloqueada com sucesso!");
+            atualizarNotasLocalStorage(); // Atualiza o armazenamento local após bloquear a nota
         }
 
         function atualizarNotasLocalStorage() {
