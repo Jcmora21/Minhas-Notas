@@ -44,9 +44,6 @@
             padding: 10px;
             border-radius: 5px;
         }
-        .botao-bloquear {
-            display: none;
-        }
     </style>
     <script>
         let notas = JSON.parse(localStorage.getItem('notas')) || [];
@@ -54,6 +51,7 @@
         function adicionarNota() {
             const titulo = document.getElementById('tituloInput').value;
             const conteudo = document.getElementById('conteudoInput').value;
+
             if (titulo === '' && conteudo === '') {
                 alert("Você deve inserir um título ou conteúdo para salvar a nota.");
                 return;
@@ -85,13 +83,8 @@
                     ${nota.bloqueada ? '<p>Nota bloqueada. Insira o código para visualizar.</p>' : `<p>${nota.conteudo}</p>`}
                     <button onclick="abrirEditarNota(${nota.id})">Editar</button>
                     <button onclick="abrirConfirmacaoEliminar(${nota.id})">Eliminar</button>
-                    <button class="botao-bloquear" onclick="bloquearNota(${nota.id})">Bloquear Nota</button>
+                    ${!nota.bloqueada ? '<button onclick="bloquearNota(${nota.id})">Bloquear Nota</button>' : ''}
                 `;
-                if (!nota.bloqueada) {
-                    notaDiv.querySelector('.botao-bloquear').style.display = 'none';
-                } else {
-                    notaDiv.querySelector('.botao-bloquear').style.display = 'block';
-                }
                 notasContainer.appendChild(notaDiv);
             });
         }
