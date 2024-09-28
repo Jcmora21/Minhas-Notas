@@ -167,7 +167,7 @@
                 novaNota.querySelector('.bloquear-input button').style.display = 'none'; // Esconde o botão "Bloquear Nota"
             }
             novaNota.dataset.codigo = codigo; // Salva o código da nota
-            novaNota.dataset.conteudoOriginal = conteudo; // Salva o conteúdo original da nota
+            novaNota.dataset.conteudoOriginal = conteudo; // Salva o conteúdo original
             notasContainer.appendChild(novaNota);
         }
 
@@ -239,8 +239,15 @@
 
             if (novoTitulo !== null && novoConteudo !== null) {
                 nota.querySelector('h2').innerText = novoTitulo;
-                nota.querySelector('p').innerText = novoConteudo;
                 nota.dataset.conteudoOriginal = novoConteudo; // Atualiza o conteúdo original
+
+                // Se a nota estiver bloqueada, mantém o conteúdo oculto
+                if (nota.dataset.codigo) {
+                    nota.querySelector('p').classList.add('conteudo-oculto'); // Garante que o conteúdo permaneça oculto
+                    nota.querySelector('p').innerText = "Conteúdo oculto"; // Muda o texto
+                } else {
+                    nota.querySelector('p').innerText = novoConteudo; // Atualiza o texto se não estiver bloqueada
+                }
 
                 atualizarNotasLocalStorage();
                 mostrarMensagem("Nota editada com sucesso!");
