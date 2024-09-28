@@ -87,7 +87,7 @@
         .criar-nota button:hover {
             background-color: #42a5f5;
         }
-        .confirmacao, .codigo-input {
+        .confirmacao, .codigo-input, .confirmacao-eliminar {
             display: none;
             background-color: #1E1E1E;
             border: 2px solid #64b5f6;
@@ -236,25 +236,11 @@
             const codigo = notaParaEliminar.getAttribute('data-codigo');
 
             if (codigo) {
+                // Se a nota estiver bloqueada
                 mostrarCampoCodigo(codigo, 'eliminar', notaParaEliminar);
             } else {
-                document.getElementById('confirmacaoMensagem').innerText = "Tem certeza que deseja eliminar esta nota?";
-                document.getElementById('confirmacao').style.display = 'block';
+                eliminarNota();
             }
-        }
-
-        function eliminarNota() {
-            if (notaParaEliminar) {
-                notaParaEliminar.remove(); // Remove a nota do DOM
-                const titulo = notaParaEliminar.querySelector('h2').innerText;
-                const conteudo = notaParaEliminar.querySelector('p').innerText;
-
-                atualizarNotasLocalStorage(titulo, conteudo); // Atualiza o LocalStorage
-
-                mostrarMensagem("Nota eliminada com sucesso!");
-                notaParaEliminar = null; // Resetar a variável
-            }
-            fecharConfirmacao();
         }
 
         function mostrarCampoCodigo(codigo, acao, nota) {
@@ -277,7 +263,7 @@
             if (codigoNota) {
                 if (codigoNota.getAttribute('data-codigo') === codigoInput) {
                     if (confirmacaoTipo === 'eliminar') {
-                        eliminarNota();
+                        confirmarEliminacaoNota();
                     } else {
                         editarNota(codigoNota.querySelector('button')); // Chama a função de editar
                     }
@@ -286,6 +272,25 @@
                     alert("Código incorreto, tente novamente!");
                 }
             }
+        }
+
+        function confirmarEliminacaoNota() {
+            document.getElementById('confirmacaoMensagem').innerText = "Tem certeza que deseja eliminar esta nota?";
+            document.getElementById('confirmacao').style.display = 'block';
+        }
+
+        function eliminarNota() {
+            if (notaParaEliminar) {
+                notaParaEliminar.remove(); // Remove a nota do DOM
+                const titulo = notaParaEliminar.querySelector('h2').innerText;
+                const conteudo = notaParaEliminar.querySelector('p').innerText;
+
+                atualizarNotasLocalStorage(titulo, conteudo); // Atualiza o LocalStorage
+
+                mostrarMensagem("Nota eliminada com sucesso!");
+                notaParaEliminar = null; // Resetar a variável
+            }
+            fecharConfirmacao();
         }
 
         function bloquearNota(button) {
@@ -384,7 +389,7 @@
     </div>
 
     <footer>
-        <p>&copy; Apenas Notas</p>
+        <p>&copy; Just NOtes</p>
     </footer>
 </body>
 </html>
