@@ -228,15 +228,18 @@
 
         function eliminarNota() {
             if (notaParaEliminar) {
+                const titulo = notaParaEliminar.querySelector('h2').innerText;
+                const conteudo = notaParaEliminar.querySelector('p').innerText;
+
                 notaParaEliminar.remove();
-                atualizarNotasLocalStorage();
+                atualizarNotasLocalStorage(titulo, conteudo);
                 mostrarMensagem("Nota eliminada com sucesso!");
                 notaParaEliminar = null; // Resetar a variável
             }
             fecharConfirmacao();
         }
 
-        function atualizarNotasLocalStorage() {
+        function atualizarNotasLocalStorage(tituloEliminado, conteudoEliminado) {
             const notasContainer = document.getElementById('notasContainer');
             const notas = Array.from(notasContainer.children).map(nota => ({
                 titulo: nota.querySelector('h2').innerText,
