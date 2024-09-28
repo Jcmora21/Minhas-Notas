@@ -87,8 +87,58 @@
         .criar-nota button:hover {
             background-color: #42a5f5;
         }
+        .confirmacao {
+            display: none;
+            background-color: #1E1E1E;
+            border: 2px solid #64b5f6;
+            border-radius: 10px;
+            padding: 20px;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 10;
+        }
+        .confirmacao p {
+            margin-bottom: 20px;
+            color: #E0E0E0;
+        }
+        .confirmacao button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            margin: 0 10px;
+        }
+        .confirmacao .sim {
+            background-color: #64b5f6;
+            color: white;
+        }
+        .confirmacao .nao {
+            background-color: #f44336;
+            color: white;
+        }
+        .mensagem {
+            display: none;
+            background-color: #1E1E1E;
+            border: 2px solid #64b5f6;
+            border-radius: 10px;
+            padding: 20px;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 10;
+            color: #E0E0E0;
+        }
     </style>
     <script>
+        // Variável para armazenar o contexto de qual pergunta está sendo feita (título ou conteúdo)
+        let confirmacaoTipo = "";
+
         // Função para carregar as notas do LocalStorage
         function carregarNotas() {
             const notasSalvas = JSON.parse(localStorage.getItem('notas')) || [];
@@ -113,18 +163,55 @@
             const titulo = tituloInput.value.trim();
             const conteudo = conteudoInput.value.trim();
 
-            if (titulo !== "" && conteudo !== "") {
-                adicionarNota(titulo, conteudo);
-
-                // Salvar no LocalStorage
-                const notasSalvas = JSON.parse(localStorage.getItem('notas')) || [];
-                notasSalvas.push({ titulo: titulo, conteudo: conteudo });
-                localStorage.setItem('notas', JSON.stringify(notasSalvas));
-
-                // Limpar os campos
-                tituloInput.value = "";
-                conteudoInput.value = "";
+            // Se o título estiver vazio, exibir pergunta de confirmação
+            if (titulo === "") {
+                confirmacaoTipo = "titulo";
+                document.getElementById('confirmacaoMensagem').innerText = "Quer salvar esta nota sem título?";
+                document.getElementById('confirmacao').style.display = 'block';
+            } else if (conteudo === "") {
+                // Se o conteúdo estiver vazio, exibir pergunta de confirmação
+                confirmacaoTipo = "conteudo";
+                document.getElementById('confirmacaoMensagem').innerText = "Quer salvar esta nota sem conteúdo?";
+                document.getElementById('confirmacao').style.display = 'block';
+            } else {
+                // Salvar a nota se ambos os campos estiverem preenchidos
+                salvarNota(titulo, conteudo);
             }
+        }
+
+        // Função para salvar a nota no LocalStorage e no HTML
+        function salvarNota(titulo, conteudo) {
+            if (titulo === "") titulo = "Nota sem título";
+            if (conteudo === "") conteudo = "(sem conteúdo)";
+
+            adicionarNota(titulo, conteudo);
+
+            const notasSalvas = JSON.parse(localStorage.getItem('notas')) || [];
+            notasSalvas.push({ titulo: titulo, conteudo: conteudo });
+            localStorage.setItem('notas', JSON.stringify(notasSalvas));
+
+            // Limpar os campos
+            document.getElementById('tituloInput').value = "";
+            document.getElementById('conteudoInput').value = "";
+        }
+
+        // Função chamada quando a resposta "Sim" for clicada na confirmação
+        function confirmarSim() {
+            const tituloInput = document.getElementById('tituloInput').value.trim();
+            const conteudoInput = document.getElementById('conteudoInput').value.trim();
+
+            if (confirmacaoTipo === "titulo") {
+                salvarNota("Nota sem título", conteudoInput);
+            } else if (confirmacaoTipo === "conteudo") {
+                salvarNota(tituloInput, "(sem conteúdo)");
+            }
+
+            fecharConfirmacao();
+        }
+
+        // Função chamada quando a resposta "Não" for clicada
+        function fecharConfirmacao() {
+            document.getElementById('confirmacao').style.display = 'none';
         }
 
         // Função para editar uma nota existente
@@ -142,6 +229,9 @@
 
                 // Atualizar no LocalStorage
                 atualizarNotasLocalStorage();
+
+                // Exibir mensagem de sucesso
+                mostrarMensagem("Nota atualizada com sucesso!");
             }
         }
 
@@ -168,7 +258,21 @@
             localStorage.setItem('notas', JSON.stringify(notasAtualizadas));
         }
 
-        // Carregar as notas ao abrir a página
+        // Função para mostrar mensagem de sucesso
+        function mostrarMensagem(mensagem) {
+            const mensagemContainer = document.createElement('div');
+            mensagemContainer.className = 'mensagem';
+            mensagemContainer.innerText = mensagem;
+            document.body.appendChild(mensagemContainer);
+            mensagemContainer.style.display = 'block';
+
+            // Remover a mensagem após 2 segundos
+            setTimeout(() => {
+                mensagemContainer.remove();
+            }, 2000);
+        }
+
+        // Carregar notas ao iniciar
         window.onload = carregarNotas;
     </script>
 </head>
@@ -188,8 +292,14 @@
         <!-- As notas serão adicionadas aqui -->
     </div>
 
+    <div id="confirmacao" class="confirmacao">
+        <p id="confirmacaoMensagem"></p>
+        <button class="sim" onclick="confirmarSim()">Sim</button>
+        <button class="nao" onclick="fecharConfirmacao()">Não</button>
+    </div>
+
     <footer>
-        <p>&copy; Apena Notas</p>
+        <p>&copy; Apenas Notas</p>
     </footer>
 </body>
 </html>
