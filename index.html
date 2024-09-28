@@ -167,6 +167,7 @@
                 novaNota.querySelector('.bloquear-input button').style.display = 'none'; // Esconde o botão "Bloquear Nota"
             }
             novaNota.dataset.codigo = codigo; // Salva o código da nota
+            novaNota.dataset.conteudoOriginal = conteudo; // Salva o conteúdo original da nota
             notasContainer.appendChild(novaNota);
         }
 
@@ -222,7 +223,7 @@
         function editarNota(button) {
             const nota = button.parentElement;
             const titulo = nota.querySelector('h2').innerText;
-            const conteudo = nota.querySelector('p').innerText;
+            const conteudo = nota.dataset.conteudoOriginal || nota.querySelector('p').innerText;
             const codigo = nota.dataset.codigo;
 
             if (codigo) {
@@ -239,9 +240,10 @@
             if (novoTitulo !== null && novoConteudo !== null) {
                 nota.querySelector('h2').innerText = novoTitulo;
                 nota.querySelector('p').innerText = novoConteudo;
+                nota.dataset.conteudoOriginal = novoConteudo; // Atualiza o conteúdo original
 
                 atualizarNotasLocalStorage();
-                mostrarMensagem("Nota atualizada com sucesso!");
+                mostrarMensagem("Nota editada com sucesso!");
             }
         }
 
@@ -272,6 +274,7 @@
 
             if (codigo && codigo.length >= 4 && codigo.length <= 12) {
                 nota.dataset.codigo = codigo;
+                nota.dataset.conteudoOriginal = conteudo.innerText; // Salva o conteúdo original
                 nota.querySelector('.bloquear-input button').style.display = 'none'; // Esconde o botão "Bloquear Nota"
                 conteudo.classList.add('conteudo-oculto'); // Exibe "Conteúdo oculto"
                 conteudo.innerText = "Conteúdo oculto"; // Muda o texto
@@ -334,7 +337,7 @@
             const notas = [];
             document.querySelectorAll('.nota').forEach(nota => {
                 const titulo = nota.querySelector('h2').innerText;
-                const conteudo = nota.querySelector('p').innerText;
+                const conteudo = nota.dataset.conteudoOriginal || nota.querySelector('p').innerText;
                 const codigo = nota.dataset.codigo;
                 notas.push({ titulo: titulo, conteudo: conteudo, codigo: codigo });
             });
