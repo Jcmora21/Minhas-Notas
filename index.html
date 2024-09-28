@@ -156,7 +156,7 @@
                 <button onclick="editarNota(this)">Editar</button>
                 <button onclick="confirmarEliminacao(this)">Eliminar</button>
                 <div class="bloquear-input">
-                    <input type="text" placeholder="Código" maxlength="12" onkeypress="return event.charCode < 48 || event.charCode > 57" />
+                    <input type="text" placeholder="Código (opcional)" maxlength="12" onkeypress="return event.charCode < 48 || event.charCode > 57" />
                     <button onclick="bloquearNota(this)">Bloquear Nota</button>
                 </div>`;
             novaNota.dataset.codigo = codigo; // Salva o código da nota
