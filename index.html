@@ -302,14 +302,24 @@
         function alterarCodigo(button) {
             const nota = button.parentElement;
             const codigoAtual = nota.dataset.codigo;
-            const novoCodigo = prompt("Insira um novo código para a nota:");
 
-            if (novoCodigo && novoCodigo.length >= 4 && novoCodigo.length <= 12) {
-                nota.dataset.codigo = novoCodigo;
-                atualizarNotasLocalStorage();
-                mostrarMensagem("Código da nota alterado com sucesso!");
+            if (codigoAtual) {
+                const codigoAntigo = prompt("Insira o código atual para alterar:");
+                if (codigoAntigo !== codigoAtual) {
+                    alert("Código incorreto! Tente novamente.");
+                    return;
+                }
+
+                const novoCodigo = prompt("Insira um novo código para a nota:");
+                if (novoCodigo && novoCodigo.length >= 4 && novoCodigo.length <= 12) {
+                    nota.dataset.codigo = novoCodigo;
+                    atualizarNotasLocalStorage();
+                    mostrarMensagem("Código da nota alterado com sucesso!");
+                } else {
+                    alert("O novo código deve ter entre 4 e 12 dígitos.");
+                }
             } else {
-                alert("O código deve ter entre 4 e 12 dígitos.");
+                alert("Esta nota não possui código para alterar.");
             }
         }
 
