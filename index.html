@@ -149,16 +149,11 @@
             const notasContainer = document.getElementById('notasContainer');
             const novaNota = document.createElement('div');
             novaNota.className = 'nota';
+            novaNota.setAttribute('data-codigo', codigo || ''); // Adiciona atributo de código
             novaNota.innerHTML = `<h2>${titulo}</h2><p>${conteudo}</p>
                 <button onclick="editarNota(this)">Editar</button>
                 <button onclick="confirmarEliminacao(this)">Eliminar</button>
-                <button class="bloquear" style="display: none;" onclick="bloquearNota(this)">Bloquear Nota</button>`;
-            if (codigo) {
-                novaNota.setAttribute('data-codigo', codigo);
-                novaNota.querySelector('.bloquear').style.display = 'none'; // Oculta o botão de bloquear se a nota já está bloqueada
-            } else {
-                novaNota.setAttribute('data-codigo', ''); // Adiciona um atributo vazio para notas não bloqueadas
-            }
+                <button class="bloquear" style="display: ${codigo ? 'none' : 'inline-block'};" onclick="bloquearNota(this)">Bloquear Nota</button>`;
             notasContainer.appendChild(novaNota);
         }
 
