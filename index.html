@@ -136,17 +136,14 @@
         }
     </style>
     <script>
-        // Variável para armazenar o contexto de qual pergunta está sendo feita (título ou conteúdo)
         let confirmacaoTipo = "";
-        let notaParaEliminar = null; // Variável para armazenar a nota a ser eliminada
+        let notaParaEliminar = null;
 
-        // Função para carregar as notas do LocalStorage
         function carregarNotas() {
             const notasSalvas = JSON.parse(localStorage.getItem('notas')) || [];
             notasSalvas.forEach(nota => adicionarNota(nota.titulo, nota.conteudo));
         }
 
-        // Função para adicionar nova nota no HTML
         function adicionarNota(titulo, conteudo) {
             const notasContainer = document.getElementById('notasContainer');
             const novaNota = document.createElement('div');
@@ -157,46 +154,38 @@
             notasContainer.appendChild(novaNota);
         }
 
-        // Função para mostrar notas na tela e salvar no LocalStorage
         function mostrarNotas() {
             const tituloInput = document.getElementById('tituloInput');
             const conteudoInput = document.getElementById('conteudoInput');
             const titulo = tituloInput.value.trim();
             const conteudo = conteudoInput.value.trim();
 
-            // Se o título estiver vazio, exibir pergunta de confirmação
             if (titulo === "") {
                 confirmacaoTipo = "titulo";
                 document.getElementById('confirmacaoMensagem').innerText = "Quer salvar esta nota sem título?";
                 document.getElementById('confirmacao').style.display = 'block';
             } else if (conteudo === "") {
-                // Se o conteúdo estiver vazio, exibir pergunta de confirmação
                 confirmacaoTipo = "conteudo";
                 document.getElementById('confirmacaoMensagem').innerText = "Quer salvar esta nota sem conteúdo?";
                 document.getElementById('confirmacao').style.display = 'block';
             } else {
-                // Salvar a nota se ambos os campos estiverem preenchidos
                 salvarNota(titulo, conteudo);
             }
         }
 
-        // Função para salvar a nota no LocalStorage e no HTML
         function salvarNota(titulo, conteudo) {
             if (titulo === "") titulo = "Nota sem título";
             if (conteudo === "") conteudo = "(sem conteúdo)";
 
             adicionarNota(titulo, conteudo);
-
             const notasSalvas = JSON.parse(localStorage.getItem('notas')) || [];
             notasSalvas.push({ titulo: titulo, conteudo: conteudo });
             localStorage.setItem('notas', JSON.stringify(notasSalvas));
 
-            // Limpar os campos
             document.getElementById('tituloInput').value = "";
             document.getElementById('conteudoInput').value = "";
         }
 
-        // Função chamada quando a resposta "Sim" for clicada na confirmação
         function confirmarSim() {
             const tituloInput = document.getElementById('tituloInput').value.trim();
             const conteudoInput = document.getElementById('conteudoInput').value.trim();
@@ -210,12 +199,10 @@
             fecharConfirmacao();
         }
 
-        // Função chamada quando a resposta "Não" for clicada
         function fecharConfirmacao() {
             document.getElementById('confirmacao').style.display = 'none';
         }
 
-        // Função para editar uma nota existente
         function editarNota(button) {
             const nota = button.parentElement;
             const titulo = nota.querySelector('h2').innerText;
@@ -228,22 +215,17 @@
                 nota.querySelector('h2').innerText = novoTitulo;
                 nota.querySelector('p').innerText = novoConteudo;
 
-                // Atualizar no LocalStorage
                 atualizarNotasLocalStorage();
-
-                // Exibir mensagem de sucesso
                 mostrarMensagem("Nota atualizada com sucesso!");
             }
         }
 
-        // Função para confirmar a eliminação da nota
         function confirmarEliminacao(button) {
             notaParaEliminar = button.parentElement;
             document.getElementById('confirmacaoMensagem').innerText = "Tem a certeza que quer eliminar esta nota?";
             document.getElementById('confirmacao').style.display = 'block';
         }
 
-        // Função para eliminar uma nota
         function eliminarNota() {
             if (notaParaEliminar) {
                 notaParaEliminar.remove();
@@ -254,7 +236,6 @@
             fecharConfirmacao();
         }
 
-        // Função para atualizar o LocalStorage
         function atualizarNotasLocalStorage() {
             const notasContainer = document.getElementById('notasContainer');
             const notas = Array.from(notasContainer.children).map(nota => ({
@@ -264,7 +245,6 @@
             localStorage.setItem('notas', JSON.stringify(notas));
         }
 
-        // Função para mostrar mensagem de sucesso
         function mostrarMensagem(mensagem) {
             const mensagemContainer = document.createElement('div');
             mensagemContainer.className = 'mensagem';
@@ -272,13 +252,11 @@
             document.body.appendChild(mensagemContainer);
             mensagemContainer.style.display = 'block';
 
-            // Remover a mensagem após 2 segundos
             setTimeout(() => {
                 mensagemContainer.remove();
             }, 2000);
         }
 
-        // Carregar notas ao iniciar
         window.onload = carregarNotas;
     </script>
 </head>
@@ -301,7 +279,7 @@
     <div id="confirmacao" class="confirmacao">
         <p id="confirmacaoMensagem"></p>
         <button class="sim" onclick="confirmarSim()">Sim</button>
-        <button class="nao" onclick="eliminarNota()">Não</button>
+        <button class="nao" onclick="fecharConfirmacao()">Não</button>
     </div>
 
     <footer>
