@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minhas Notas</title>
+    <title>Minhas Notas - Dark Mode</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f5f5f5;
-            color: #333;
+            font-family: 'Roboto', sans-serif;
+            background-color: #121212;
+            color: #E0E0E0;
             margin: 0;
             padding: 20px;
         }
@@ -17,34 +17,78 @@
             margin-bottom: 30px;
         }
         h1 {
-            color: #4CAF50;
+            color: #64b5f6;
+            font-size: 2.5em;
         }
         .notas {
-            background-color: white;
-            border-radius: 5px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
         }
         .nota {
-            margin-bottom: 20px;
-            padding: 10px;
-            border-left: 4px solid #4CAF50;
+            background-color: #1E1E1E;
+            border-radius: 10px;
+            padding: 20px;
+            border: 2px solid #64b5f6;
+            position: relative;
+            transition: transform 0.2s ease;
+        }
+        .nota:hover {
+            transform: scale(1.05);
+        }
+        .nota h2 {
+            margin: 0;
+            font-size: 1.5em;
+            color: #64b5f6;
+        }
+        .nota p {
+            margin: 10px 0;
+        }
+        .nota button {
+            background-color: #64b5f6;
+            color: #fff;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        .nota button:hover {
+            background-color: #42a5f5;
         }
         footer {
             text-align: center;
-            margin-top: 30px;
-            font-size: 0.8em;
+            margin-top: 50px;
+            font-size: 0.9em;
+            color: #64b5f6;
         }
         .criar-nota {
-            margin: 20px 0;
             text-align: center;
+            margin-bottom: 20px;
         }
-        .nota button {
+        .criar-nota input {
+            padding: 10px;
+            width: 300px;
+            border: none;
+            border-radius: 5px;
             margin-right: 10px;
+            background-color: #2C2C2C;
+            color: #E0E0E0;
+        }
+        .criar-nota button {
+            background-color: #64b5f6;
+            color: #fff;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+        .criar-nota button:hover {
+            background-color: #42a5f5;
         }
     </style>
     <script>
-        // Função para carregar notas do LocalStorage
         function carregarNotas() {
             const notasSalvas = JSON.parse(localStorage.getItem('notas')) || [];
             const notasContainer = document.getElementById('notasContainer');
@@ -54,7 +98,6 @@
             });
         }
 
-        // Função para adicionar uma nova nota
         function adicionarNota(conteudo) {
             const notasContainer = document.getElementById('notasContainer');
             const novaNota = document.createElement('div');
@@ -65,23 +108,20 @@
             notasContainer.appendChild(novaNota);
         }
 
-        // Função para salvar novas notas no LocalStorage
         function mostrarNotas() {
             const notaInput = document.getElementById('notaInput');
             const conteudo = notaInput.value.trim();
             if (conteudo !== "") {
                 adicionarNota(conteudo);
 
-                // Salvar no LocalStorage
                 const notasSalvas = JSON.parse(localStorage.getItem('notas')) || [];
                 notasSalvas.push(conteudo);
                 localStorage.setItem('notas', JSON.stringify(notasSalvas));
 
-                notaInput.value = ""; // Limpar o input
+                notaInput.value = "";
             }
         }
 
-        // Função para editar uma nota
         function editarNota(button) {
             const nota = button.parentElement;
             const conteudo = nota.querySelector('p');
@@ -89,23 +129,19 @@
             if (novoConteudo !== null && novoConteudo.trim() !== "") {
                 conteudo.innerText = novoConteudo;
 
-                // Atualizar no LocalStorage
                 const notas = Array.from(document.querySelectorAll('.nota p')).map(nota => nota.innerText);
                 localStorage.setItem('notas', JSON.stringify(notas));
             }
         }
 
-        // Função para eliminar uma nota
         function eliminarNota(button) {
             const nota = button.parentElement;
-            nota.remove(); // Remove a nota do DOM
+            nota.remove();
 
-            // Atualizar o LocalStorage
             const notas = Array.from(document.querySelectorAll('.nota p')).map(nota => nota.innerText);
             localStorage.setItem('notas', JSON.stringify(notas));
         }
 
-        // Carregar notas quando a página for aberta
         window.onload = carregarNotas;
     </script>
 </head>
