@@ -138,7 +138,8 @@
             margin-top: 10px;
         }
         .conteudo-oculto {
-            display: none;
+            color: #757575;
+            font-style: italic;
         }
     </style>
     <script>
@@ -154,7 +155,7 @@
             const notasContainer = document.getElementById('notasContainer');
             const novaNota = document.createElement('div');
             novaNota.className = 'nota';
-            novaNota.innerHTML = `<h2>${titulo}</h2><p ${codigo ? 'class="conteudo-oculto"' : ''}>${conteudo}</p>
+            novaNota.innerHTML = `<h2>${titulo}</h2><p ${codigo ? 'class="conteudo-oculto"' : ''}>${codigo ? 'Conteúdo oculto' : conteudo}</p>
                 <button onclick="editarNota(this)">Editar</button>
                 <button onclick="confirmarEliminacao(this)">Eliminar</button>
                 <div class="bloquear-input">
@@ -272,7 +273,8 @@
             if (codigo && codigo.length >= 4 && codigo.length <= 12) {
                 nota.dataset.codigo = codigo;
                 nota.querySelector('.bloquear-input button').style.display = 'none'; // Esconde o botão "Bloquear Nota"
-                conteudo.classList.add('conteudo-oculto'); // Oculta o conteúdo
+                conteudo.classList.add('conteudo-oculto'); // Exibe "Conteúdo oculto"
+                conteudo.innerText = "Conteúdo oculto"; // Muda o texto
                 nota.innerHTML += `<button onclick="desbloquearNota(this)">Desbloquear Nota</button>`;
                 nota.innerHTML += `<button onclick="alterarCodigo(this)">Alterar Código</button>`;
                 atualizarNotasLocalStorage();
@@ -291,7 +293,9 @@
                 if (codigoInput === codigo) {
                     nota.dataset.codigo = ""; // Remove o código
                     nota.querySelector('.bloquear-input button').style.display = 'block'; // Mostra o botão "Bloquear Nota"
-                    nota.querySelector('p').classList.remove('conteudo-oculto'); // Restaura o conteúdo
+                    const conteudo = nota.querySelector('p');
+                    conteudo.classList.remove('conteudo-oculto'); // Remove a classe oculta
+                    conteudo.innerText = nota.dataset.conteudoOriginal; // Restaura o conteúdo original
                     button.remove();
                     nota.querySelector('button[onclick="alterarCodigo(this)"]').remove();
                     atualizarNotasLocalStorage();
