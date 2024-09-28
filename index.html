@@ -89,59 +89,86 @@
         }
     </style>
     <script>
+        // Função para carregar as notas do LocalStorage
         function carregarNotas() {
             const notasSalvas = JSON.parse(localStorage.getItem('notas')) || [];
-            const notasContainer = document.getElementById('notasContainer');
-            
-            notasSalvas.forEach(nota => {
-                adicionarNota(nota);
-            });
+            notasSalvas.forEach(nota => adicionarNota(nota.titulo, nota.conteudo));
         }
 
-        function adicionarNota(conteudo) {
+        // Função para adicionar nova nota no HTML
+        function adicionarNota(titulo, conteudo) {
             const notasContainer = document.getElementById('notasContainer');
             const novaNota = document.createElement('div');
             novaNota.className = 'nota';
-            novaNota.innerHTML = `<h2>Título da Nota</h2><p>${conteudo}</p>
+            novaNota.innerHTML = `<h2>${titulo}</h2><p>${conteudo}</p>
                 <button onclick="editarNota(this)">Editar</button>
                 <button onclick="eliminarNota(this)">Eliminar</button>`;
             notasContainer.appendChild(novaNota);
         }
 
+        // Função para mostrar notas na tela e salvar no LocalStorage
         function mostrarNotas() {
-            const notaInput = document.getElementById('notaInput');
-            const conteudo = notaInput.value.trim();
-            if (conteudo !== "") {
-                adicionarNota(conteudo);
+            const tituloInput = document.getElementById('tituloInput');
+            const conteudoInput = document.getElementById('conteudoInput');
+            const titulo = tituloInput.value.trim();
+            const conteudo = conteudoInput.value.trim();
 
+            if (titulo !== "" && conteudo !== "") {
+                adicionarNota(titulo, conteudo);
+
+                // Salvar no LocalStorage
                 const notasSalvas = JSON.parse(localStorage.getItem('notas')) || [];
-                notasSalvas.push(conteudo);
+                notasSalvas.push({ titulo: titulo, conteudo: conteudo });
                 localStorage.setItem('notas', JSON.stringify(notasSalvas));
 
-                notaInput.value = "";
+                // Limpar os campos
+                tituloInput.value = "";
+                conteudoInput.value = "";
             }
         }
 
+        // Função para editar uma nota existente
         function editarNota(button) {
             const nota = button.parentElement;
-            const conteudo = nota.querySelector('p');
-            const novoConteudo = prompt("Edite sua nota:", conteudo.innerText);
-            if (novoConteudo !== null && novoConteudo.trim() !== "") {
-                conteudo.innerText = novoConteudo;
+            const titulo = nota.querySelector('h2').innerText;
+            const conteudo = nota.querySelector('p').innerText;
 
-                const notas = Array.from(document.querySelectorAll('.nota p')).map(nota => nota.innerText);
-                localStorage.setItem('notas', JSON.stringify(notas));
+            const novoTitulo = prompt("Edite o título da nota:", titulo);
+            const novoConteudo = prompt("Edite o conteúdo da nota:", conteudo);
+
+            if (novoTitulo !== null && novoConteudo !== null) {
+                nota.querySelector('h2').innerText = novoTitulo;
+                nota.querySelector('p').innerText = novoConteudo;
+
+                // Atualizar no LocalStorage
+                atualizarNotasLocalStorage();
             }
         }
 
+        // Função para eliminar uma nota
         function eliminarNota(button) {
             const nota = button.parentElement;
             nota.remove();
 
-            const notas = Array.from(document.querySelectorAll('.nota p')).map(nota => nota.innerText);
-            localStorage.setItem('notas', JSON.stringify(notas));
+            // Atualizar o LocalStorage
+            atualizarNotasLocalStorage();
         }
 
+        // Função para atualizar todas as notas no LocalStorage
+        function atualizarNotasLocalStorage() {
+            const notasAtualizadas = [];
+            const notas = document.querySelectorAll('.nota');
+
+            notas.forEach(nota => {
+                const titulo = nota.querySelector('h2').innerText;
+                const conteudo = nota.querySelector('p').innerText;
+                notasAtualizadas.push({ titulo: titulo, conteudo: conteudo });
+            });
+
+            localStorage.setItem('notas', JSON.stringify(notasAtualizadas));
+        }
+
+        // Carregar as notas ao abrir a página
         window.onload = carregarNotas;
     </script>
 </head>
@@ -152,7 +179,8 @@
 
     <div class="criar-nota">
         <h2>Criar Notas</h2>
-        <input type="text" id="notaInput" placeholder="Escreva sua nota aqui..." />
+        <input type="text" id="tituloInput" placeholder="Título da nota" />
+        <input type="text" id="conteudoInput" placeholder="Conteúdo da nota" />
         <button onclick="mostrarNotas()">Adicionar Nota</button>
     </div>
 
@@ -161,7 +189,7 @@
     </div>
 
     <footer>
-        <p>&copy; Apenas Notas</p>
+        <p>&copy; Apena Notas</p>
     </footer>
 </body>
 </html>
