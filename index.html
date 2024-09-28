@@ -156,8 +156,10 @@
                 <button onclick="confirmarEliminacao(this)">Eliminar</button>
                 <div class="bloquear-input">
                     <button onclick="bloquearNota(this)">Bloquear Nota</button>
-                    <button onclick="alterarCodigo(this)">Alterar Código</button>
                 </div>`;
+            if (codigo) {
+                novaNota.innerHTML += `<button onclick="alterarCodigo(this)">Alterar Código</button>`;
+            }
             novaNota.dataset.codigo = codigo; // Salva o código da nota
             notasContainer.appendChild(novaNota);
         }
@@ -217,10 +219,12 @@
             const conteudo = nota.querySelector('p').innerText;
             const codigo = nota.dataset.codigo;
 
-            const codigoInput = prompt("Insira o código da nota para editar:");
-            if (codigoInput !== codigo) {
-                alert("Código incorreto! Tente novamente.");
-                return;
+            if (codigo) {
+                const codigoInput = prompt("Insira o código da nota para editar:");
+                if (codigoInput !== codigo) {
+                    alert("Código incorreto! Tente novamente.");
+                    return;
+                }
             }
 
             const novoTitulo = prompt("Edite o título da nota:", titulo);
@@ -237,24 +241,29 @@
 
         function confirmarEliminacao(button) {
             notaParaEliminar = button.parentElement;
-            document.getElementById('confirmacaoMensagem').innerText = "Tem a certeza que quer eliminar esta nota?";
-            document.getElementById('confirmacao').style.display = 'block';
+            const codigo = notaParaEliminar.dataset.codigo;
 
-            // Alterar o evento do botão "Sim"
-            document.querySelector('.confirmacao .sim').onclick = eliminarNota;
+            if (codigo) {
+                document.getElementById('confirmacaoMensagem').innerText = "Tem a certeza que quer eliminar esta nota? Insira o código:";
+                document.getElementById('confirmacao').style.display = 'block';
+                document.querySelector('.confirmacao .sim').onclick = eliminarNota;
+            } else {
+                eliminarNota();
+            }
         }
 
         function eliminarNota() {
             const codigo = notaParaEliminar.dataset.codigo;
-            const codigoInput = prompt("Insira o código da nota para eliminar:");
 
-            if (codigoInput !== codigo) {
-                alert("Código incorreto! Tente novamente.");
-                return;
+            if (codigo) {
+                const codigoInput = prompt("Insira o código da nota para eliminar:");
+                if (codigoInput !== codigo) {
+                    alert("Código incorreto! Tente novamente.");
+                    return;
+                }
             }
 
-            const notasContainer = document.getElementById('notasContainer');
-            notasContainer.removeChild(notaParaEliminar);
+            notaParaEliminar.remove();
             atualizarNotasLocalStorage();
             mostrarMensagem("Nota eliminada com sucesso!");
 
@@ -283,10 +292,16 @@
             nota.dataset.codigo = codigoInput;
             mostrarMensagem("Nota bloqueada com sucesso!");
             atualizarNotasLocalStorage(); // Atualiza o armazenamento local após bloquear a nota
+
+            // Adiciona o botão de alterar código
+            const alterarButton = document.createElement('button');
+            alterarButton.innerText = 'Alterar Código';
+            alterarButton.onclick = function () { alterarCodigo(this); };
+            nota.appendChild(alterarButton);
         }
 
         function alterarCodigo(button) {
-            const nota = button.parentElement.parentElement;
+            const nota = button.parentElement;
             const codigoAtual = nota.dataset.codigo;
 
             const codigoInput = prompt("Insira o código atual para alterar:", codigoAtual);
