@@ -87,7 +87,7 @@
         .criar-nota button:hover {
             background-color: #42a5f5;
         }
-        .confirmacao, .codigo-input, .confirmacao-eliminar {
+        .confirmacao {
             display: none;
             background-color: #1E1E1E;
             border: 2px solid #64b5f6;
@@ -100,11 +100,11 @@
             text-align: center;
             z-index: 10;
         }
-        .confirmacao p, .codigo-input p {
+        .confirmacao p {
             margin-bottom: 20px;
             color: #E0E0E0;
         }
-        .confirmacao button, .codigo-input button {
+        .confirmacao button {
             padding: 10px 20px;
             border: none;
             border-radius: 5px;
@@ -112,11 +112,11 @@
             font-size: 1em;
             margin: 0 10px;
         }
-        .confirmacao .sim, .codigo-input .sim {
+        .confirmacao .sim {
             background-color: #64b5f6;
             color: white;
         }
-        .confirmacao .nao, .codigo-input .nao {
+        .confirmacao .nao {
             background-color: #f44336;
             color: white;
         }
@@ -134,11 +134,14 @@
             z-index: 10;
             color: #E0E0E0;
         }
+        .bloquear-input {
+            margin-top: 10px;
+        }
     </style>
     <script>
         let confirmacaoTipo = "";
         let notaParaEliminar = null;
-        let codigoNota = null;
+        let codigoNota = "";
 
         function carregarNotas() {
             const notasSalvas = JSON.parse(localStorage.getItem('notas')) || [];
@@ -149,12 +152,14 @@
             const notasContainer = document.getElementById('notasContainer');
             const novaNota = document.createElement('div');
             novaNota.className = 'nota';
-            novaNota.setAttribute('data-codigo', codigo || ''); // Adiciona atributo de código
             novaNota.innerHTML = `<h2>${titulo}</h2><p>${conteudo}</p>
                 <button onclick="editarNota(this)">Editar</button>
                 <button onclick="confirmarEliminacao(this)">Eliminar</button>
-                <button class="bloquear" style="display: ${codigo ? 'none' : 'inline-block'};" onclick="bloquearNota(this)">Bloquear Nota</button>
-                <button class="alterar-codigo" style="display: ${codigo ? 'inline-block' : 'none'};" onclick="alterarCodigo(this)">Alterar Código</button>`;
+                <div class="bloquear-input">
+                    <input type="text" placeholder="Código" maxlength="12" onkeypress="return event.charCode < 48 || event.charCode > 57" />
+                    <button onclick="bloquearNota(this)">Bloquear Nota</button>
+                </div>`;
+            novaNota.dataset.codigo = codigo; // Salva o código da nota
             notasContainer.appendChild(novaNota);
         }
 
@@ -178,12 +183,18 @@
         }
 
         function salvarNota(titulo, conteudo) {
+            const codigo = prompt("Defina um código de até 12 dígitos (sem espaços):");
+            if (!codigo || codigo.length > 12 || /\s/.test(codigo)) {
+                alert("Código inválido! Deve ter até 12 dígitos e não conter espaços.");
+                return;
+            }
+
             if (titulo === "") titulo = "Nota sem título";
             if (conteudo === "") conteudo = "(sem conteúdo)";
 
-            adicionarNota(titulo, conteudo, "");
+            adicionarNota(titulo, conteudo, codigo);
             const notasSalvas = JSON.parse(localStorage.getItem('notas')) || [];
-            notasSalvas.push({ titulo: titulo, conteudo: conteudo, codigo: "" });
+            notasSalvas.push({ titulo: titulo, conteudo: conteudo, codigo: codigo });
             localStorage.setItem('notas', JSON.stringify(notasSalvas));
 
             document.getElementById('tituloInput').value = "";
@@ -209,151 +220,89 @@
 
         function editarNota(button) {
             const nota = button.parentElement;
-            const codigo = nota.getAttribute('data-codigo');
+            const titulo = nota.querySelector('h2').innerText;
+            const conteudo = nota.querySelector('p').innerText;
+            const codigo = nota.dataset.codigo;
 
-            if (codigo) {
-                // Se a nota estiver bloqueada
-                mostrarCampoCodigo(codigo, 'editar', nota);
-            } else {
-                const titulo = nota.querySelector('h2').innerText;
-                const conteudo = nota.querySelector('p').innerText;
+            const codigoInput = prompt("Insira o código da nota para editar:");
+            if (codigoInput !== codigo) {
+                alert("Código incorreto! Tente novamente.");
+                return;
+            }
 
-                const novoTitulo = prompt("Edite o título da nota:", titulo);
-                const novoConteudo = prompt("Edite o conteúdo da nota:", conteudo);
+            const novoTitulo = prompt("Edite o título da nota:", titulo);
+            const novoConteudo = prompt("Edite o conteúdo da nota:", conteudo);
 
-                if (novoTitulo !== null && novoConteudo !== null) {
-                    nota.querySelector('h2').innerText = novoTitulo;
-                    nota.querySelector('p').innerText = novoConteudo;
+            if (novoTitulo !== null && novoConteudo !== null) {
+                nota.querySelector('h2').innerText = novoTitulo;
+                nota.querySelector('p').innerText = novoConteudo;
 
-                    atualizarNotasLocalStorage();
-                    mostrarMensagem("Nota atualizada com sucesso!");
-                }
+                atualizarNotasLocalStorage();
+                mostrarMensagem("Nota atualizada com sucesso!");
             }
         }
 
         function confirmarEliminacao(button) {
             notaParaEliminar = button.parentElement;
-            const codigo = notaParaEliminar.getAttribute('data-codigo');
-
-            if (codigo) {
-                // Se a nota estiver bloqueada
-                mostrarCampoCodigo(codigo, 'eliminar', notaParaEliminar);
-            } else {
-                eliminarNota();
-            }
-        }
-
-        function mostrarCampoCodigo(codigo, acao, nota) {
-            codigoNota = nota;
-            const codigoInput = document.getElementById('codigoInput');
-            const codigoMensagem = document.getElementById('codigoMensagem');
-            codigoMensagem.innerText = `Insira o código para ${acao === 'eliminar' ? 'eliminar' : 'editar'} a nota:`;
-            codigoInput.value = "";
-            document.getElementById('codigo-input').style.display = 'block';
-        }
-
-        function validarCodigo() {
-            const codigoInput = document.getElementById('codigoInput').value.trim();
-
-            if (codigoInput.length > 12 || codigoInput.includes(' ')) {
-                alert("O código deve ter até 12 dígitos e não pode conter espaços.");
-                return;
-            }
-
-            if (codigoNota) {
-                if (codigoNota.getAttribute('data-codigo') === codigoInput) {
-                    if (confirmacaoTipo === 'eliminar') {
-                        confirmarEliminacaoNota();
-                    } else {
-                        editarNota(codigoNota.querySelector('button')); // Chama a função de editar
-                    }
-                    fecharCampoCodigo();
-                } else {
-                    alert("Código incorreto, tente novamente!");
-                }
-            }
-        }
-
-        function confirmarEliminacaoNota() {
-            document.getElementById('confirmacaoMensagem').innerText = "Tem certeza que deseja eliminar esta nota?";
+            document.getElementById('confirmacaoMensagem').innerText = "Tem a certeza que quer eliminar esta nota?";
             document.getElementById('confirmacao').style.display = 'block';
+
+            // Alterar o evento do botão "Sim"
+            document.querySelector('.confirmacao .sim').onclick = eliminarNota;
         }
 
         function eliminarNota() {
-            if (notaParaEliminar) {
-                notaParaEliminar.remove(); // Remove a nota do DOM
-                const titulo = notaParaEliminar.querySelector('h2').innerText;
-                const conteudo = notaParaEliminar.querySelector('p').innerText;
+            const codigo = notaParaEliminar.dataset.codigo;
+            const codigoInput = prompt("Insira o código da nota para eliminar:");
 
-                atualizarNotasLocalStorage(titulo, conteudo); // Atualiza o LocalStorage
-
-                mostrarMensagem("Nota eliminada com sucesso!");
-                notaParaEliminar = null; // Resetar a variável
+            if (codigoInput !== codigo) {
+                alert("Código incorreto! Tente novamente.");
+                return;
             }
+
+            const notasContainer = document.getElementById('notasContainer');
+            notasContainer.removeChild(notaParaEliminar);
+            atualizarNotasLocalStorage();
+            mostrarMensagem("Nota eliminada com sucesso!");
+
             fecharConfirmacao();
         }
 
-        function bloquearNota(button) {
-            const nota = button.parentElement;
-            const codigo = prompt("Defina um código de até 12 dígitos para bloquear esta nota:");
-
-            if (codigo && codigo.length <= 12 && !codigo.includes(' ')) {
-                nota.setAttribute('data-codigo', codigo);
-                button.style.display = 'none'; // Oculta o botão de bloquear após bloquear a nota
-                mostrarMensagem("Nota bloqueada com sucesso!");
-                atualizarNotasLocalStorage(); // Atualiza o LocalStorage
-                const alterarButton = nota.querySelector('.alterar-codigo');
-                alterarButton.style.display = 'inline-block'; // Mostra o botão de alterar código
-            } else {
-                alert("Código deve ter até 12 dígitos e não pode conter espaços!");
-            }
-        }
-
-        function alterarCodigo(button) {
-            const nota = button.parentElement;
-            const codigoAtual = nota.getAttribute('data-codigo');
-            const codigoInputAtual = prompt("Insira o código atual:");
-
-            if (codigoInputAtual === codigoAtual) {
-                const novoCodigo = prompt("Defina um novo código de até 12 dígitos:");
-
-                if (novoCodigo && novoCodigo.length <= 12 && !novoCodigo.includes(' ')) {
-                    nota.setAttribute('data-codigo', novoCodigo);
-                    mostrarMensagem("Código alterado com sucesso!");
-                    atualizarNotasLocalStorage(); // Atualiza o LocalStorage
-                } else {
-                    alert("Novo código deve ter até 12 dígitos e não pode conter espaços!");
-                }
-            } else {
-                alert("Código incorreto, tente novamente!");
-            }
-        }
-
-        function atualizarNotasLocalStorage(tituloEliminado, conteudoEliminado) {
-            const notasContainer = document.getElementById('notasContainer');
-            const notas = Array.from(notasContainer.children).map(nota => ({
-                titulo: nota.querySelector('h2').innerText,
-                conteudo: nota.querySelector('p').innerText,
-                codigo: nota.getAttribute('data-codigo')
-            }));
-            localStorage.setItem('notas', JSON.stringify(notas));
-        }
-
         function mostrarMensagem(mensagem) {
-            const mensagemContainer = document.createElement('div');
-            mensagemContainer.className = 'mensagem';
+            const mensagemContainer = document.getElementById('mensagem');
             mensagemContainer.innerText = mensagem;
-            document.body.appendChild(mensagemContainer);
             mensagemContainer.style.display = 'block';
 
             setTimeout(() => {
-                mensagemContainer.remove();
-            }, 2000);
+                mensagemContainer.style.display = 'none';
+            }, 3000);
         }
 
-        function fecharCampoCodigo() {
-            document.getElementById('codigo-input').style.display = 'none';
-            codigoNota = null; // Resetar a variável
+        function bloquearNota(button) {
+            const nota = button.parentElement.parentElement;
+            const codigoInput = button.previousElementSibling.value.trim();
+
+            if (codigoInput.length === 0 || codigoInput.length > 12 || /\s/.test(codigoInput)) {
+                alert("Código inválido! Deve ter até 12 dígitos e não conter espaços.");
+                return;
+            }
+
+            nota.dataset.codigo = codigoInput;
+            mostrarMensagem("Nota bloqueada com sucesso!");
+        }
+
+        function atualizarNotasLocalStorage() {
+            const notasContainer = document.getElementById('notasContainer');
+            const notas = [];
+
+            notasContainer.querySelectorAll('.nota').forEach(nota => {
+                const titulo = nota.querySelector('h2').innerText;
+                const conteudo = nota.querySelector('p').innerText;
+                const codigo = nota.dataset.codigo;
+                notas.push({ titulo, conteudo, codigo });
+            });
+
+            localStorage.setItem('notas', JSON.stringify(notas));
         }
 
         window.onload = carregarNotas;
@@ -363,17 +312,12 @@
     <header>
         <h1>Minhas Notas</h1>
     </header>
-
     <div class="criar-nota">
-        <h2>Criar Notas</h2>
-        <input type="text" id="tituloInput" placeholder="Título da nota" />
-        <input type="text" id="conteudoInput" placeholder="Conteúdo da nota" />
+        <input type="text" id="tituloInput" placeholder="Título da nota">
+        <input type="text" id="conteudoInput" placeholder="Conteúdo da nota">
         <button onclick="mostrarNotas()">Adicionar Nota</button>
     </div>
-
-    <div id="notasContainer" class="notas">
-        <!-- As notas serão adicionadas aqui -->
-    </div>
+    <div id="notasContainer" class="notas"></div>
 
     <div id="confirmacao" class="confirmacao">
         <p id="confirmacaoMensagem"></p>
@@ -381,15 +325,10 @@
         <button class="nao" onclick="fecharConfirmacao()">Não</button>
     </div>
 
-    <div id="codigo-input" class="codigo-input">
-        <p id="codigoMensagem"></p>
-        <input type="text" id="codigoInput" placeholder="Código" />
-        <button class="sim" onclick="validarCodigo()">Confirmar</button>
-        <button class="nao" onclick="fecharCampoCodigo()">Cancelar</button>
-    </div>
+    <div id="mensagem" class="mensagem"></div>
 
     <footer>
-        <p>&copy; Just NOtes</p>
+        <p>Notepointz</p>
     </footer>
 </body>
 </html>
