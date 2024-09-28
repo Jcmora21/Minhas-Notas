@@ -137,6 +137,9 @@
         .bloquear-input {
             margin-top: 10px;
         }
+        .conteudo-oculto {
+            display: none;
+        }
     </style>
     <script>
         let confirmacaoTipo = "";
@@ -151,7 +154,7 @@
             const notasContainer = document.getElementById('notasContainer');
             const novaNota = document.createElement('div');
             novaNota.className = 'nota';
-            novaNota.innerHTML = `<h2>${titulo}</h2><p>${conteudo}</p>
+            novaNota.innerHTML = `<h2>${titulo}</h2><p ${codigo ? 'class="conteudo-oculto"' : ''}>${conteudo}</p>
                 <button onclick="editarNota(this)">Editar</button>
                 <button onclick="confirmarEliminacao(this)">Eliminar</button>
                 <div class="bloquear-input">
@@ -243,16 +246,13 @@
 
         function confirmarEliminacao(button) {
             notaParaEliminar = button.parentElement;
-            const codigo = notaParaEliminar.dataset.codigo;
-
-            if (codigo) {
-                const codigoInput = prompt("Insira o código da nota para eliminar:");
-                if (codigoInput !== codigo) {
+            if (notaParaEliminar.dataset.codigo) {
+                const codigoInput = prompt("Insira o código para eliminar a nota:");
+                if (codigoInput !== notaParaEliminar.dataset.codigo) {
                     alert("Código incorreto! Tente novamente.");
                     return;
                 }
             }
-
             if (confirm("Tem certeza que deseja eliminar esta nota?")) {
                 eliminarNota();
             }
@@ -266,11 +266,13 @@
 
         function bloquearNota(button) {
             const nota = button.parentElement.parentElement;
+            const conteudo = nota.querySelector('p');
             const codigo = prompt("Defina um código para bloquear a nota:");
 
             if (codigo && codigo.length >= 4 && codigo.length <= 12) {
                 nota.dataset.codigo = codigo;
                 nota.querySelector('.bloquear-input button').style.display = 'none'; // Esconde o botão "Bloquear Nota"
+                conteudo.classList.add('conteudo-oculto'); // Oculta o conteúdo
                 nota.innerHTML += `<button onclick="desbloquearNota(this)">Desbloquear Nota</button>`;
                 nota.innerHTML += `<button onclick="alterarCodigo(this)">Alterar Código</button>`;
                 atualizarNotasLocalStorage();
@@ -289,6 +291,7 @@
                 if (codigoInput === codigo) {
                     nota.dataset.codigo = ""; // Remove o código
                     nota.querySelector('.bloquear-input button').style.display = 'block'; // Mostra o botão "Bloquear Nota"
+                    nota.querySelector('p').classList.remove('conteudo-oculto'); // Restaura o conteúdo
                     button.remove();
                     nota.querySelector('button[onclick="alterarCodigo(this)"]').remove();
                     atualizarNotasLocalStorage();
