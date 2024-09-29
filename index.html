@@ -12,20 +12,7 @@
             margin: 0;
             padding: 20px;
             display: flex;
-        }
-        .container {
-            display: flex;
-            width: 100%;
-        }
-        .adicionar-nota {
-            flex: 1;
-            margin-right: 20px;
-        }
-        .notas {
-            flex: 1;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
+            flex-direction: column;
         }
         header {
             text-align: center;
@@ -34,6 +21,26 @@
         h1 {
             color: #64b5f6;
             font-size: 2.5em;
+        }
+        .container {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+        }
+        .adicionar-nota {
+            flex: 1;
+            margin-right: 20px;
+            background-color: #1E1E1E;
+            border-radius: 10px;
+            padding: 20px;
+            border: 2px solid #64b5f6;
+        }
+        .notas {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            padding: 20px;
         }
         .nota {
             background-color: #1E1E1E;
@@ -66,17 +73,12 @@
         .nota button:hover {
             background-color: #42a5f5;
         }
-        footer {
-            text-align: center;
-            margin-top: 50px;
-            font-size: 0.9em;
-            color: #64b5f6;
-        }
         .criar-nota {
             text-align: center;
             margin-bottom: 20px;
         }
-        .criar-nota input {
+        .criar-nota input,
+        .criar-nota textarea {
             padding: 10px;
             width: 100%;
             border: none;
@@ -147,13 +149,11 @@
         .bloquear-input {
             margin-top: 10px;
         }
-        .oculto {
-            display: none;
-        }
         .seta {
             cursor: pointer;
             color: #64b5f6;
             font-size: 1.5em;
+            display: none; /* Esconde inicialmente */
         }
         .mensagem-sem-conteudo {
             color: #E0E0E0;
