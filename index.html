@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minhas Notas - Dark Mode</title>
+    <title>Minhas Notas - Dividido</title>
     <style>
         body {
             font-family: 'Roboto', sans-serif;
@@ -20,21 +20,50 @@
             color: #64b5f6;
             font-size: 2.5em;
         }
-        .notas {
+        .container {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: 1fr 1fr; /* Divide em duas colunas */
             gap: 20px;
+        }
+        .nota-form, .notas-salvas {
+            background-color: #1E1E1E;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #64b5f6;
+        }
+        .nota-form {
+            display: flex;
+            flex-direction: column;
+        }
+        .nota-form input, .nota-form textarea {
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            background-color: #2C2C2C;
+            color: #E0E0E0;
+        }
+        .nota-form button {
+            background-color: #64b5f6;
+            color: #fff;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .nota-form button:hover {
+            background-color: #42a5f5;
+        }
+        .notas {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
         .nota {
             background-color: #1E1E1E;
             border-radius: 10px;
-            padding: 20px;
+            padding: 10px;
             border: 2px solid #64b5f6;
-            position: relative;
-            transition: transform 0.2s ease;
-        }
-        .nota:hover {
-            transform: scale(1.05);
         }
         .nota h2 {
             margin: 0;
@@ -43,7 +72,7 @@
         }
         .nota p {
             margin: 10px 0;
-            white-space: pre-wrap; /* Para que quebre as linhas de acordo com o texto */
+            white-space: pre-wrap;
         }
         .nota button {
             background-color: #64b5f6;
@@ -63,68 +92,6 @@
             font-size: 0.9em;
             color: #64b5f6;
         }
-        .criar-nota {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .criar-nota input, .criar-nota textarea {
-            padding: 10px;
-            border: none;
-            border-radius: 5px;
-            margin-right: 10px;
-            background-color: #2C2C2C;
-            color: #E0E0E0;
-        }
-        .criar-nota textarea {
-            width: 300px;
-            height: 100px; /* Definido um tamanho maior para o textarea */
-            resize: vertical; /* Permite redimensionar a altura */
-        }
-        .criar-nota button {
-            background-color: #64b5f6;
-            color: #fff;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1em;
-        }
-        .criar-nota button:hover {
-            background-color: #42a5f5;
-        }
-        .confirmacao {
-            display: none;
-            background-color: #1E1E1E;
-            border: 2px solid #64b5f6;
-            border-radius: 10px;
-            padding: 20px;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-            z-index: 10;
-        }
-        .confirmacao p {
-            margin-bottom: 20px;
-            color: #E0E0E0;
-        }
-        .confirmacao button {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1em;
-            margin: 0 10px;
-        }
-        .confirmacao .sim {
-            background-color: #64b5f6;
-            color: white;
-        }
-        .confirmacao .nao {
-            background-color: #f44336;
-            color: white;
-        }
         .mensagem {
             display: none;
             background-color: #1E1E1E;
@@ -139,228 +106,54 @@
             z-index: 10;
             color: #E0E0E0;
         }
-        .bloquear-input {
-            margin-top: 10px;
-        }
-        .conteudo-oculto {
-            color: #757575;
-            font-style: italic;
-        }
     </style>
     <script>
-        let confirmacaoTipo = "";
-        let notaParaEliminar = null;
+        let notas = [];
 
-        function carregarNotas() {
-            const notasSalvas = JSON.parse(localStorage.getItem('notas')) || [];
-            notasSalvas.forEach(nota => adicionarNota(nota.titulo, nota.conteudo, nota.codigo));
-        }
-
-        function adicionarNota(titulo, conteudo, codigo) {
-            const notasContainer = document.getElementById('notasContainer');
-            const novaNota = document.createElement('div');
-            novaNota.className = 'nota';
-            novaNota.innerHTML = `<h2>${titulo}</h2><p ${codigo ? 'class="conteudo-oculto"' : ''}>${codigo ? 'Conteúdo oculto' : conteudo}</p>
-                <button onclick="editarNota(this)">Editar</button>
-                <button onclick="confirmarEliminacao(this)">Eliminar</button>
-                <div class="bloquear-input">
-                    <button onclick="bloquearNota(this)">Bloquear Nota</button>
-                </div>`;
-            if (codigo) {
-                novaNota.innerHTML += `<button onclick="alterarCodigo(this)">Alterar Código</button>`;
-                novaNota.innerHTML += `<button onclick="desbloquearNota(this)">Desbloquear Nota</button>`;
-                novaNota.querySelector('.bloquear-input button').style.display = 'none'; // Esconde o botão "Bloquear Nota"
-            }
-            novaNota.dataset.codigo = codigo; // Salva o código da nota
-            novaNota.dataset.conteudoOriginal = conteudo; // Salva o conteúdo original
-            notasContainer.appendChild(novaNota);
-        }
-
-        function mostrarNotas() {
+        function adicionarNota() {
             const tituloInput = document.getElementById('tituloInput');
             const conteudoInput = document.getElementById('conteudoInput');
             const titulo = tituloInput.value.trim();
             const conteudo = conteudoInput.value.trim();
 
-            if (titulo === "") {
-                confirmacaoTipo = "titulo";
-                document.getElementById('confirmacaoMensagem').innerText = "Quer salvar esta nota sem título?";
-                document.getElementById('confirmacao').style.display = 'block';
-            } else if (conteudo === "") {
-                confirmacaoTipo = "conteudo";
-                document.getElementById('confirmacaoMensagem').innerText = "Quer salvar esta nota sem conteúdo?";
-                document.getElementById('confirmacao').style.display = 'block';
-            } else {
-                salvarNota(titulo, conteudo);
-            }
-        }
-
-        function salvarNota(titulo, conteudo) {
-            if (titulo === "") titulo = "Nota sem título";
-            if (conteudo === "") conteudo = "(sem conteúdo)";
-
-            adicionarNota(titulo, conteudo, ""); // Não pede código ao criar
-            const notasSalvas = JSON.parse(localStorage.getItem('notas')) || [];
-            notasSalvas.push({ titulo: titulo, conteudo: conteudo, codigo: "" });
-            localStorage.setItem('notas', JSON.stringify(notasSalvas));
-
-            document.getElementById('tituloInput').value = "";
-            document.getElementById('conteudoInput').value = "";
-        }
-
-        function confirmarSim() {
-            const tituloInput = document.getElementById('tituloInput').value.trim();
-            const conteudoInput = document.getElementById('conteudoInput').value.trim();
-
-            if (confirmacaoTipo === "titulo") {
-                salvarNota("Nota sem título", conteudoInput);
-            } else if (confirmacaoTipo === "conteudo") {
-                salvarNota(tituloInput, "(sem conteúdo)");
+            if (!titulo || !conteudo) {
+                alert('Preencha ambos os campos antes de adicionar uma nota.');
+                return;
             }
 
-            fecharConfirmacao();
+            const novaNota = {
+                titulo,
+                conteudo,
+                id: notas.length + 1
+            };
+
+            notas.push(novaNota);
+            atualizarListaDeNotas();
+
+            tituloInput.value = '';
+            conteudoInput.value = '';
         }
 
-        function fecharConfirmacao() {
-            document.getElementById('confirmacao').style.display = 'none';
-        }
+        function atualizarListaDeNotas() {
+            const notasContainer = document.getElementById('notasContainer');
+            notasContainer.innerHTML = ''; // Limpa a lista de notas antes de atualizar
 
-        function editarNota(button) {
-            const nota = button.parentElement;
-            const titulo = nota.querySelector('h2').innerText;
-            const conteudo = nota.dataset.conteudoOriginal || nota.querySelector('p').innerText;
-            const codigo = nota.dataset.codigo;
-
-            if (codigo) {
-                const codigoInput = prompt("Insira o código da nota para editar:");
-                if (codigoInput !== codigo) {
-                    alert("Código incorreto! Tente novamente.");
-                    return;
-                }
-            }
-
-            const novoConteudo = prompt("Edite o conteúdo da nota:", conteudo);
-            if (novoConteudo !== null) {
-                nota.querySelector('p').innerText = novoConteudo;
-
-                if (codigo) {
-                    nota.dataset.conteudoOriginal = novoConteudo;
-                    nota.querySelector('p').classList.add('conteudo-oculto');
-                    nota.querySelector('p').innerText = "Conteúdo oculto";
-                }
-
-                atualizarNotasLocalStorage();
-                mostrarMensagem("Nota editada com sucesso!");
-            }
-        }
-
-        function confirmarEliminacao(button) {
-            notaParaEliminar = button.parentElement;
-            if (notaParaEliminar.dataset.codigo) {
-                const codigoInput = prompt("Insira o código para eliminar a nota:");
-                if (codigoInput !== notaParaEliminar.dataset.codigo) {
-                    alert("Código incorreto! Tente novamente.");
-                    return;
-                }
-            }
-            if (confirm("Tem certeza que deseja eliminar esta nota?")) {
-                eliminarNota();
-            }
-        }
-
-        function eliminarNota() {
-            notaParaEliminar.remove();
-            atualizarNotasLocalStorage();
-            mostrarMensagem("Nota eliminada com sucesso!");
-        }
-
-        function bloquearNota(button) {
-            const nota = button.parentElement.parentElement;
-            const conteudo = nota.querySelector('p');
-            const codigo = prompt("Defina um código para bloquear a nota:");
-
-            if (codigo && codigo.length >= 4 && codigo.length <= 12) {
-                nota.dataset.codigo = codigo;
-                nota.dataset.conteudoOriginal = conteudo.innerText;
-                nota.querySelector('.bloquear-input button').style.display = 'none';
-                conteudo.classList.add('conteudo-oculto');
-                conteudo.innerText = "Conteúdo oculto";
-                nota.innerHTML += `<button onclick="desbloquearNota(this)">Desbloquear Nota</button>`;
-                nota.innerHTML += `<button onclick="alterarCodigo(this)">Alterar Código</button>`;
-                atualizarNotasLocalStorage();
-                mostrarMensagem("Nota bloqueada com sucesso!");
-            } else {
-                alert("O código deve ter entre 4 e 12 dígitos.");
-            }
-        }
-
-        function desbloquearNota(button) {
-            const nota = button.parentElement;
-            const codigo = nota.dataset.codigo;
-
-            if (codigo) {
-                const codigoInput = prompt("Insira o código para desbloquear a nota:");
-                if (codigoInput === codigo) {
-                    nota.dataset.codigo = "";
-                    nota.querySelector('.bloquear-input button').style.display = 'block';
-                    const conteudo = nota.querySelector('p');
-                    conteudo.classList.remove('conteudo-oculto');
-                    conteudo.innerText = nota.dataset.conteudoOriginal;
-                    button.remove();
-                    nota.querySelector('button[onclick="alterarCodigo(this)"]').remove();
-                    atualizarNotasLocalStorage();
-                    mostrarMensagem("Nota desbloqueada com sucesso!");
-                } else {
-                    alert("Código incorreto! Tente novamente.");
-                }
-            }
-        }
-
-        function alterarCodigo(button) {
-            const nota = button.parentElement;
-            const codigoAtual = nota.dataset.codigo;
-
-            if (codigoAtual) {
-                const codigoAntigo = prompt("Insira o código atual para alterar:");
-                if (codigoAntigo !== codigoAtual) {
-                    alert("Código incorreto! Tente novamente.");
-                    return;
-                }
-
-                const novoCodigo = prompt("Insira um novo código para a nota:");
-                if (novoCodigo && novoCodigo.length >= 4 && novoCodigo.length <= 12) {
-                    nota.dataset.codigo = novoCodigo;
-                    atualizarNotasLocalStorage();
-                    mostrarMensagem("Código da nota alterado com sucesso!");
-                } else {
-                    alert("O novo código deve ter entre 4 e 12 dígitos.");
-                }
-            } else {
-                alert("Esta nota não possui código para alterar.");
-            }
-        }
-
-        function atualizarNotasLocalStorage() {
-            const notas = [];
-            document.querySelectorAll('.nota').forEach(nota => {
-                const titulo = nota.querySelector('h2').innerText;
-                const conteudo = nota.dataset.conteudoOriginal || nota.querySelector('p').innerText;
-                const codigo = nota.dataset.codigo;
-                notas.push({ titulo: titulo, conteudo: conteudo, codigo: codigo });
+            notas.forEach(nota => {
+                const notaElement = document.createElement('div');
+                notaElement.className = 'nota';
+                notaElement.innerHTML = `
+                    <h2>${nota.titulo}</h2>
+                    <p>${nota.conteudo}</p>
+                    <button onclick="removerNota(${nota.id})">Eliminar</button>
+                `;
+                notasContainer.appendChild(notaElement);
             });
-            localStorage.setItem('notas', JSON.stringify(notas));
         }
 
-        function mostrarMensagem(mensagem) {
-            const mensagemContainer = document.getElementById('mensagem');
-            mensagemContainer.innerText = mensagem;
-            mensagemContainer.style.display = 'block';
-            setTimeout(() => {
-                mensagemContainer.style.display = 'none';
-            }, 3000);
+        function removerNota(id) {
+            notas = notas.filter(nota => nota.id !== id);
+            atualizarListaDeNotas();
         }
-
-        window.onload = carregarNotas;
     </script>
 </head>
 <body>
@@ -368,18 +161,19 @@
         <h1>Minhas Notas</h1>
     </header>
 
-    <div class="criar-nota">
-        <input type="text" id="tituloInput" placeholder="Título da nota">
-        <textarea id="conteudoInput" placeholder="Conteúdo da nota"></textarea>
-        <button onclick="mostrarNotas()">Adicionar Nota</button>
-    </div>
+    <div class="container">
+        <!-- Lado esquerdo: Campo de título e conteúdo -->
+        <div class="nota-form">
+            <input type="text" id="tituloInput" placeholder="Título da nota">
+            <textarea id="conteudoInput" placeholder="Conteúdo da nota" rows="6"></textarea>
+            <button onclick="adicionarNota()">Adicionar Nota</button>
+        </div>
 
-    <div id="notasContainer" class="notas"></div>
-
-    <div id="confirmacao" class="confirmacao">
-        <p id="confirmacaoMensagem"></p>
-        <button class="sim" onclick="confirmarSim()">Sim</button>
-        <button class="nao" onclick="fecharConfirmacao()">Não</button>
+        <!-- Lado direito: Lista de notas salvas -->
+        <div class="notas-salvas">
+            <h2>Notas Salvas</h2>
+            <div id="notasContainer" class="notas"></div>
+        </div>
     </div>
 
     <div id="mensagem" class="mensagem"></div>
