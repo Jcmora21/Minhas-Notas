@@ -43,6 +43,7 @@
         }
         .nota p {
             margin: 10px 0;
+            white-space: pre-wrap; /* Para que quebre as linhas de acordo com o texto */
         }
         .nota button {
             background-color: #64b5f6;
@@ -66,14 +67,18 @@
             text-align: center;
             margin-bottom: 20px;
         }
-        .criar-nota input {
+        .criar-nota input, .criar-nota textarea {
             padding: 10px;
-            width: 300px;
             border: none;
             border-radius: 5px;
             margin-right: 10px;
             background-color: #2C2C2C;
             color: #E0E0E0;
+        }
+        .criar-nota textarea {
+            width: 300px;
+            height: 100px; /* Definido um tamanho maior para o textarea */
+            resize: vertical; /* Permite redimensionar a altura */
         }
         .criar-nota button {
             background-color: #64b5f6;
@@ -234,19 +239,14 @@
                 }
             }
 
-            const novoTitulo = prompt("Edite o título da nota:", titulo);
             const novoConteudo = prompt("Edite o conteúdo da nota:", conteudo);
+            if (novoConteudo !== null) {
+                nota.querySelector('p').innerText = novoConteudo;
 
-            if (novoTitulo !== null && novoConteudo !== null) {
-                nota.querySelector('h2').innerText = novoTitulo;
-                nota.dataset.conteudoOriginal = novoConteudo; // Atualiza o conteúdo original
-
-                // Se a nota estiver bloqueada, mantém o conteúdo oculto
-                if (nota.dataset.codigo) {
-                    nota.querySelector('p').classList.add('conteudo-oculto'); // Garante que o conteúdo permaneça oculto
-                    nota.querySelector('p').innerText = "Conteúdo oculto"; // Muda o texto
-                } else {
-                    nota.querySelector('p').innerText = novoConteudo; // Atualiza o texto se não estiver bloqueada
+                if (codigo) {
+                    nota.dataset.conteudoOriginal = novoConteudo;
+                    nota.querySelector('p').classList.add('conteudo-oculto');
+                    nota.querySelector('p').innerText = "Conteúdo oculto";
                 }
 
                 atualizarNotasLocalStorage();
@@ -281,10 +281,10 @@
 
             if (codigo && codigo.length >= 4 && codigo.length <= 12) {
                 nota.dataset.codigo = codigo;
-                nota.dataset.conteudoOriginal = conteudo.innerText; // Salva o conteúdo original
-                nota.querySelector('.bloquear-input button').style.display = 'none'; // Esconde o botão "Bloquear Nota"
-                conteudo.classList.add('conteudo-oculto'); // Exibe "Conteúdo oculto"
-                conteudo.innerText = "Conteúdo oculto"; // Muda o texto
+                nota.dataset.conteudoOriginal = conteudo.innerText;
+                nota.querySelector('.bloquear-input button').style.display = 'none';
+                conteudo.classList.add('conteudo-oculto');
+                conteudo.innerText = "Conteúdo oculto";
                 nota.innerHTML += `<button onclick="desbloquearNota(this)">Desbloquear Nota</button>`;
                 nota.innerHTML += `<button onclick="alterarCodigo(this)">Alterar Código</button>`;
                 atualizarNotasLocalStorage();
@@ -301,11 +301,11 @@
             if (codigo) {
                 const codigoInput = prompt("Insira o código para desbloquear a nota:");
                 if (codigoInput === codigo) {
-                    nota.dataset.codigo = ""; // Remove o código
-                    nota.querySelector('.bloquear-input button').style.display = 'block'; // Mostra o botão "Bloquear Nota"
+                    nota.dataset.codigo = "";
+                    nota.querySelector('.bloquear-input button').style.display = 'block';
                     const conteudo = nota.querySelector('p');
-                    conteudo.classList.remove('conteudo-oculto'); // Remove a classe oculta
-                    conteudo.innerText = nota.dataset.conteudoOriginal; // Restaura o conteúdo original
+                    conteudo.classList.remove('conteudo-oculto');
+                    conteudo.innerText = nota.dataset.conteudoOriginal;
                     button.remove();
                     nota.querySelector('button[onclick="alterarCodigo(this)"]').remove();
                     atualizarNotasLocalStorage();
@@ -370,7 +370,7 @@
 
     <div class="criar-nota">
         <input type="text" id="tituloInput" placeholder="Título da nota">
-        <input type="text" id="conteudoInput" placeholder="Conteúdo da nota">
+        <textarea id="conteudoInput" placeholder="Conteúdo da nota"></textarea>
         <button onclick="mostrarNotas()">Adicionar Nota</button>
     </div>
 
