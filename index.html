@@ -22,7 +22,7 @@
         }
         .container {
             display: grid;
-            grid-template-columns: 1fr 1fr; /* Divide em duas colunas */
+            grid-template-columns: 1fr 2fr;
             gap: 20px;
         }
         .nota-form, .notas-salvas {
@@ -30,6 +30,7 @@
             padding: 20px;
             border-radius: 10px;
             border: 2px solid #64b5f6;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
         }
         .nota-form {
             display: flex;
@@ -42,6 +43,10 @@
             margin-bottom: 10px;
             background-color: #2C2C2C;
             color: #E0E0E0;
+            resize: vertical;
+        }
+        .nota-form textarea {
+            height: 100px;
         }
         .nota-form button {
             background-color: #64b5f6;
@@ -50,6 +55,7 @@
             padding: 10px;
             border-radius: 5px;
             cursor: pointer;
+            font-size: 1em;
         }
         .nota-form button:hover {
             background-color: #42a5f5;
@@ -57,13 +63,15 @@
         .notas {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 15px;
         }
         .nota {
             background-color: #1E1E1E;
             border-radius: 10px;
-            padding: 10px;
+            padding: 15px;
             border: 2px solid #64b5f6;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            position: relative;
         }
         .nota h2 {
             margin: 0;
@@ -78,10 +86,11 @@
             background-color: #64b5f6;
             color: #fff;
             border: none;
-            padding: 8px 12px;
+            padding: 6px 10px;
             border-radius: 5px;
             cursor: pointer;
-            margin-right: 10px;
+            margin-right: 5px;
+            font-size: 0.9em;
         }
         .nota button:hover {
             background-color: #42a5f5;
@@ -106,9 +115,19 @@
             z-index: 10;
             color: #E0E0E0;
         }
+        .conteudo-oculto {
+            color: #757575;
+            font-style: italic;
+        }
     </style>
     <script>
         let notas = [];
+
+        function carregarNotas() {
+            const notasSalvas = JSON.parse(localStorage.getItem('notas')) || [];
+            notas = notasSalvas;
+            atualizarListaDeNotas();
+        }
 
         function adicionarNota() {
             const tituloInput = document.getElementById('tituloInput');
@@ -122,16 +141,19 @@
             }
 
             const novaNota = {
+                id: Date.now(),
                 titulo,
-                conteudo,
-                id: notas.length + 1
+                conteudoOriginal: conteudo,
+                bloqueada: false,
+                codigo: ""
             };
-
             notas.push(novaNota);
             atualizarListaDeNotas();
+            salvarNotas();
 
             tituloInput.value = '';
             conteudoInput.value = '';
+            mostrarMensagem("Nota adicionada com sucesso!");
         }
 
         function atualizarListaDeNotas() {
@@ -141,19 +163,146 @@
             notas.forEach(nota => {
                 const notaElement = document.createElement('div');
                 notaElement.className = 'nota';
+                const conteudoExibido = nota.bloqueada ? 'Conteúdo oculto' : nota.conteudoOriginal;
                 notaElement.innerHTML = `
                     <h2>${nota.titulo}</h2>
-                    <p>${nota.conteudo}</p>
+                    <p>${conteudoExibido}</p>
+                    <button onclick="editarNota(${nota.id})">Editar</button>
                     <button onclick="removerNota(${nota.id})">Eliminar</button>
+                    <button onclick="bloquearNota(${nota.id})">${nota.bloqueada ? 'Desbloquear' : 'Bloquear'}</button>
+                    ${nota.bloqueada ? `
+                        <button onclick="alterarCodigo(${nota.id})">Alterar Código</button>
+                    ` : ''}
                 `;
                 notasContainer.appendChild(notaElement);
             });
         }
 
-        function removerNota(id) {
-            notas = notas.filter(nota => nota.id !== id);
+        function editarNota(id) {
+            const nota = notas.find(n => n.id === id);
+            if (!nota) return;
+
+            if (nota.bloqueada) {
+                const codigoInput = prompt("Insira o código da nota para editar:");
+                if (codigoInput !== nota.codigo) {
+                    alert("Código incorreto! Tente novamente.");
+                    return;
+                }
+            }
+
+            const novoTitulo = prompt("Edite o título da nota:", nota.titulo);
+            if (novoTitulo === null) return; // Cancelou
+
+            const novoConteudo = prompt("Edite o conteúdo da nota:", nota.conteudoOriginal);
+            if (novoConteudo === null) return; // Cancelou
+
+            nota.titulo = novoTitulo.trim() || "Nota sem título";
+            nota.conteudoOriginal = novoConteudo.trim() || "(sem conteúdo)";
+
             atualizarListaDeNotas();
+            salvarNotas();
+            mostrarMensagem("Nota editada com sucesso!");
         }
+
+        function removerNota(id) {
+            const nota = notas.find(n => n.id === id);
+            if (!nota) return;
+
+            if (nota.bloqueada) {
+                const codigoInput = prompt("Insira o código da nota para eliminar:");
+                if (codigoInput !== nota.codigo) {
+                    alert("Código incorreto! Tente novamente.");
+                    return;
+                }
+            }
+
+            if (confirm("Tem certeza que deseja eliminar esta nota?")) {
+                notas = notas.filter(n => n.id !== id);
+                atualizarListaDeNotas();
+                salvarNotas();
+                mostrarMensagem("Nota eliminada com sucesso!");
+            }
+        }
+
+        function bloquearNota(id) {
+            const nota = notas.find(n => n.id === id);
+            if (!nota) return;
+
+            if (nota.bloqueada) {
+                // Desbloquear
+                const codigoInput = prompt("Insira o código para desbloquear a nota:");
+                if (codigoInput !== nota.codigo) {
+                    alert("Código incorreto! Tente novamente.");
+                    return;
+                }
+                nota.bloqueada = false;
+                nota.codigo = "";
+                atualizarListaDeNotas();
+                salvarNotas();
+                mostrarMensagem("Nota desbloqueada com sucesso!");
+            } else {
+                // Bloquear
+                const codigo = prompt("Defina um código para bloquear a nota (4-12 caracteres):");
+                if (!codigo) {
+                    alert("Bloqueio cancelado.");
+                    return;
+                }
+                if (codigo.length < 4 || codigo.length > 12) {
+                    alert("O código deve ter entre 4 e 12 caracteres.");
+                    return;
+                }
+                nota.bloqueada = true;
+                nota.codigo = codigo;
+                atualizarListaDeNotas();
+                salvarNotas();
+                mostrarMensagem("Nota bloqueada com sucesso!");
+            }
+        }
+
+        function alterarCodigo(id) {
+            const nota = notas.find(n => n.id === id);
+            if (!nota) return;
+
+            if (!nota.bloqueada) {
+                alert("Esta nota não está bloqueada.");
+                return;
+            }
+
+            const codigoAntigo = prompt("Insira o código atual para alterar:");
+            if (codigoAntigo !== nota.codigo) {
+                alert("Código incorreto! Tente novamente.");
+                return;
+            }
+
+            const novoCodigo = prompt("Insira um novo código para a nota (4-12 caracteres):");
+            if (!novoCodigo) {
+                alert("Alteração de código cancelada.");
+                return;
+            }
+            if (novoCodigo.length < 4 || novoCodigo.length > 12) {
+                alert("O novo código deve ter entre 4 e 12 caracteres.");
+                return;
+            }
+
+            nota.codigo = novoCodigo;
+            salvarNotas();
+            mostrarMensagem("Código da nota alterado com sucesso!");
+        }
+
+        function salvarNotas() {
+            localStorage.setItem('notas', JSON.stringify(notas));
+        }
+
+        function mostrarMensagem(mensagem) {
+            const mensagemContainer = document.getElementById('mensagem');
+            mensagemContainer.innerText = mensagem;
+            mensagemContainer.style.display = 'block';
+            setTimeout(() => {
+                mensagemContainer.style.display = 'none';
+            }, 3000);
+        }
+
+        window.onload = carregarNotas;
     </script>
 </head>
 <body>
@@ -165,7 +314,7 @@
         <!-- Lado esquerdo: Campo de título e conteúdo -->
         <div class="nota-form">
             <input type="text" id="tituloInput" placeholder="Título da nota">
-            <textarea id="conteudoInput" placeholder="Conteúdo da nota" rows="6"></textarea>
+            <textarea id="conteudoInput" placeholder="Conteúdo da nota"></textarea>
             <button onclick="adicionarNota()">Adicionar Nota</button>
         </div>
 
