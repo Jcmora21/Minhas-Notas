@@ -122,6 +122,7 @@
     </style>
     <script>
         let notas = [];
+        let notaAtualId = null; // Para controlar a nota sendo editada
 
         function carregarNotas() {
             const notasSalvas = JSON.parse(localStorage.getItem('notas')) || [];
@@ -129,31 +130,45 @@
             atualizarListaDeNotas();
         }
 
-        function adicionarNota() {
+        function adicionarOuEditarNota() {
             const tituloInput = document.getElementById('tituloInput');
             const conteudoInput = document.getElementById('conteudoInput');
             const titulo = tituloInput.value.trim();
             const conteudo = conteudoInput.value.trim();
 
             if (!titulo || !conteudo) {
-                alert('Preencha ambos os campos antes de adicionar uma nota.');
+                alert('Preencha ambos os campos antes de adicionar ou editar uma nota.');
                 return;
             }
 
-            const novaNota = {
-                id: Date.now(),
-                titulo,
-                conteudoOriginal: conteudo,
-                bloqueada: false,
-                codigo: ""
-            };
-            notas.push(novaNota);
+            if (notaAtualId) {
+                // Editar nota existente
+                const nota = notas.find(n => n.id === notaAtualId);
+                if (nota) {
+                    nota.titulo = titulo;
+                    nota.conteudoOriginal = conteudo;
+                    notaAtualId = null; // Resetar após edição
+                    mostrarMensagem("Nota editada com sucesso!");
+                }
+            } else {
+                // Adicionar nova nota
+                const novaNota = {
+                    id: Date.now(),
+                    titulo,
+                    conteudoOriginal: conteudo,
+                    bloqueada: false,
+                    codigo: ""
+                };
+                notas.push(novaNota);
+                mostrarMensagem("Nota adicionada com sucesso!");
+            }
+
             atualizarListaDeNotas();
             salvarNotas();
 
+            // Limpar campos
             tituloInput.value = '';
             conteudoInput.value = '';
-            mostrarMensagem("Nota adicionada com sucesso!");
         }
 
         function atualizarListaDeNotas() {
@@ -167,7 +182,7 @@
                 notaElement.innerHTML = `
                     <h2>${nota.titulo}</h2>
                     <p>${conteudoExibido}</p>
-                    <button onclick="editarNota(${nota.id})">Editar</button>
+                    <button onclick="prepararEdicaoNota(${nota.id})">Editar</button>
                     <button onclick="removerNota(${nota.id})">Eliminar</button>
                     <button onclick="bloquearNota(${nota.id})">${nota.bloqueada ? 'Desbloquear' : 'Bloquear'}</button>
                     ${nota.bloqueada ? `
@@ -178,7 +193,7 @@
             });
         }
 
-        function editarNota(id) {
+        function prepararEdicaoNota(id) {
             const nota = notas.find(n => n.id === id);
             if (!nota) return;
 
@@ -190,18 +205,13 @@
                 }
             }
 
-            const novoTitulo = prompt("Edite o título da nota:", nota.titulo);
-            if (novoTitulo === null) return; // Cancelou
+            // Preencher campos de título e conteúdo para edição
+            const tituloInput = document.getElementById('tituloInput');
+            const conteudoInput = document.getElementById('conteudoInput');
+            tituloInput.value = nota.titulo;
+            conteudoInput.value = nota.conteudoOriginal;
 
-            const novoConteudo = prompt("Edite o conteúdo da nota:", nota.conteudoOriginal);
-            if (novoConteudo === null) return; // Cancelou
-
-            nota.titulo = novoTitulo.trim() || "Nota sem título";
-            nota.conteudoOriginal = novoConteudo.trim() || "(sem conteúdo)";
-
-            atualizarListaDeNotas();
-            salvarNotas();
-            mostrarMensagem("Nota editada com sucesso!");
+            notaAtualId = id; // Define a nota atual para edição
         }
 
         function removerNota(id) {
@@ -261,32 +271,23 @@
 
         function alterarCodigo(id) {
             const nota = notas.find(n => n.id === id);
-            if (!nota) return;
+            if (!nota || !nota.bloqueada) return;
 
-            if (!nota.bloqueada) {
-                alert("Esta nota não está bloqueada.");
-                return;
-            }
-
-            const codigoAntigo = prompt("Insira o código atual para alterar:");
-            if (codigoAntigo !== nota.codigo) {
+            const codigoInput = prompt("Insira o código atual da nota:");
+            if (codigoInput !== nota.codigo) {
                 alert("Código incorreto! Tente novamente.");
                 return;
             }
 
-            const novoCodigo = prompt("Insira um novo código para a nota (4-12 caracteres):");
-            if (!novoCodigo) {
-                alert("Alteração de código cancelada.");
-                return;
-            }
-            if (novoCodigo.length < 4 || novoCodigo.length > 12) {
+            const novoCodigo = prompt("Insira o novo código (4-12 caracteres):");
+            if (!novoCodigo || novoCodigo.length < 4 || novoCodigo.length > 12) {
                 alert("O novo código deve ter entre 4 e 12 caracteres.");
                 return;
             }
 
             nota.codigo = novoCodigo;
             salvarNotas();
-            mostrarMensagem("Código da nota alterado com sucesso!");
+            mostrarMensagem("Código alterado com sucesso!");
         }
 
         function salvarNotas() {
@@ -294,12 +295,12 @@
         }
 
         function mostrarMensagem(mensagem) {
-            const mensagemContainer = document.getElementById('mensagem');
-            mensagemContainer.innerText = mensagem;
-            mensagemContainer.style.display = 'block';
+            const mensagemElement = document.getElementById('mensagem');
+            mensagemElement.textContent = mensagem;
+            mensagemElement.style.display = 'block';
             setTimeout(() => {
-                mensagemContainer.style.display = 'none';
-            }, 3000);
+                mensagemElement.style.display = 'none';
+            }, 2000);
         }
 
         window.onload = carregarNotas;
@@ -311,24 +312,22 @@
     </header>
 
     <div class="container">
-        <!-- Lado esquerdo: Campo de título e conteúdo -->
         <div class="nota-form">
             <input type="text" id="tituloInput" placeholder="Título da nota">
             <textarea id="conteudoInput" placeholder="Conteúdo da nota"></textarea>
-            <button onclick="adicionarNota()">Adicionar Nota</button>
+            <button onclick="adicionarOuEditarNota()">Salvar Nota</button>
         </div>
 
-        <!-- Lado direito: Lista de notas salvas -->
         <div class="notas-salvas">
             <h2>Notas Salvas</h2>
-            <div id="notasContainer" class="notas"></div>
+            <div class="notas" id="notasContainer"></div>
         </div>
     </div>
 
     <div id="mensagem" class="mensagem"></div>
 
     <footer>
-        <p>Organize suas notas de forma simples e segura.</p>
+        <p>Feito por José Carlos</p>
     </footer>
 </body>
 </html>
