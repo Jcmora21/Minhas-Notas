@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minhas Notas - Dark Mode</title>
+    <title>Minhas Notas - Dividido</title>
     <style>
         body {
             font-family: 'Roboto', sans-serif;
@@ -11,19 +11,6 @@
             color: #E0E0E0;
             margin: 0;
             padding: 20px;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-        }
-        #content {
-            display: flex;
-            flex-grow: 1;
-        }
-        #left-side, #right-side {
-            width: 50%;
-        }
-        #left-side {
-            padding-right: 20px;
         }
         header {
             text-align: center;
@@ -33,23 +20,58 @@
             color: #64b5f6;
             font-size: 2.5em;
         }
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 20px;
+        }
+        .nota-form, .notas-salvas {
+            background-color: #1E1E1E;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #64b5f6;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .nota-form {
+            display: flex;
+            flex-direction: column;
+        }
+        .nota-form input, .nota-form textarea {
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            background-color: #2C2C2C;
+            color: #E0E0E0;
+            resize: vertical;
+        }
+        .nota-form textarea {
+            height: 100px;
+        }
+        .nota-form button {
+            background-color: #64b5f6;
+            color: #fff;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+        .nota-form button:hover {
+            background-color: #42a5f5;
+        }
         .notas {
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 15px;
         }
         .nota {
             background-color: #1E1E1E;
             border-radius: 10px;
-            padding: 20px;
+            padding: 15px;
             border: 2px solid #64b5f6;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
             position: relative;
-            transition: transform 0.2s ease;
-            max-height: 400px;
-            overflow: hidden;
-        }
-        .nota.expandida {
-            max-height: none;
         }
         .nota h2 {
             margin: 0;
@@ -58,89 +80,26 @@
         }
         .nota p {
             margin: 10px 0;
+            white-space: pre-wrap;
         }
         .nota button {
             background-color: #64b5f6;
             color: #fff;
             border: none;
-            padding: 8px 12px;
+            padding: 6px 10px;
             border-radius: 5px;
             cursor: pointer;
-            margin-right: 10px;
+            margin-right: 5px;
+            font-size: 0.9em;
         }
         .nota button:hover {
             background-color: #42a5f5;
         }
-        .show-more {
-            background: none;
-            color: #64b5f6;
-            border: none;
-            cursor: pointer;
-            font-size: 0.9em;
-        }
-        .show-more:hover {
-            text-decoration: underline;
-        }
-        .nota p.oculto {
-            font-style: italic;
-            color: #ccc;
-        }
-        .criar-nota {
-            margin-bottom: 20px;
-        }
-        .criar-nota input, .criar-nota textarea {
-            padding: 10px;
-            width: 100%;
-            border: none;
-            border-radius: 5px;
-            margin-bottom: 10px;
-            background-color: #2C2C2C;
-            color: #E0E0E0;
-        }
-        .criar-nota button {
-            background-color: #64b5f6;
-            color: #fff;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1em;
-        }
-        .criar-nota button:hover {
-            background-color: #42a5f5;
-        }
-        .confirmacao {
-            display: none;
-            background-color: #1E1E1E;
-            border: 2px solid #64b5f6;
-            border-radius: 10px;
-            padding: 20px;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+        footer {
             text-align: center;
-            z-index: 10;
-        }
-        .confirmacao p {
-            margin-bottom: 20px;
-            color: #E0E0E0;
-        }
-        .confirmacao button {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1em;
-            margin: 0 10px;
-        }
-        .confirmacao .sim {
-            background-color: #64b5f6;
-            color: white;
-        }
-        .confirmacao .nao {
-            background-color: #f44336;
-            color: white;
+            margin-top: 50px;
+            font-size: 0.9em;
+            color: #64b5f6;
         }
         .mensagem {
             display: none;
@@ -156,79 +115,219 @@
             z-index: 10;
             color: #E0E0E0;
         }
-        footer {
-            text-align: center;
-            margin-top: 20px;
-            padding: 10px 0;
-            background-color: #1E1E1E;
-            color: #64b5f6;
-            font-size: 0.9em;
-            border-top: 1px solid #64b5f6;
-            position: relative;
+        .conteudo-oculto {
+            color: #757575;
+            font-style: italic;
         }
     </style>
-</head>
-<body>
-    <div id="content">
-        <div id="left-side">
-            <header>
-                <h1>Minhas Notas</h1>
-            </header>
-            <div class="criar-nota">
-                <input type="text" id="tituloInput" placeholder="Título da nota">
-                <textarea id="conteudoInput" placeholder="Conteúdo da nota" rows="4"></textarea>
-                <button onclick="mostrarNotas()">Adicionar Nota</button>
-            </div>
-        </div>
-
-        <div id="right-side">
-            <div id="notasContainer" class="notas"></div>
-        </div>
-    </div>
-
-    <footer>
-        <p>&copy; Organise as suas notas de forma simples e segura.</p>
-    </footer>
-
     <script>
-        function redimensionarTextarea() {
-            const textarea = document.getElementById('conteudoInput');
-            textarea.style.height = 'auto';
-            textarea.style.height = textarea.scrollHeight + 'px';
+        let notas = [];
+        let notaAtualId = null; // Para controlar a nota sendo editada
+
+        function carregarNotas() {
+            const notasSalvas = JSON.parse(localStorage.getItem('notas')) || [];
+            notas = notasSalvas;
+            atualizarListaDeNotas();
         }
 
-        document.getElementById('conteudoInput').addEventListener('input', redimensionarTextarea);
+        function adicionarOuEditarNota() {
+            const tituloInput = document.getElementById('tituloInput');
+            const conteudoInput = document.getElementById('conteudoInput');
+            const titulo = tituloInput.value.trim();
+            const conteudo = conteudoInput.value.trim();
 
-        function adicionarNota(titulo, conteudo) {
-            const notasContainer = document.getElementById('notasContainer');
-            const novaNota = document.createElement('div');
-            novaNota.className = 'nota';
-            novaNota.innerHTML = `<h2>${titulo || 'Nota sem título'}</h2>
-                                  <p>${conteudo || 'Nota sem conteúdo'}</p>
-                                  <button onclick="editarNota(this)">Editar</button>
-                                  <button onclick="confirmarEliminacao(this)">Eliminar</button>
-                                  <button onclick="bloquearNota(this)">Bloquear</button>`;
-            notasContainer.appendChild(novaNota);
+            if (!titulo || !conteudo) {
+                alert('Preencha ambos os campos antes de adicionar ou editar uma nota.');
+                return;
+            }
 
-            verificarParagrafos(novaNota);
-        }
-
-        function verificarParagrafos(nota) {
-            const conteudo = nota.querySelector('p');
-            const paragrafos = conteudo.innerHTML.split('<br>').length;
-            if (paragrafos > 4) {
-                const botaoMostrarMais = document.createElement('button');
-                botaoMostrarMais.className = 'show-more';
-                botaoMostrarMais.innerText = 'Mostrar mais';
-                botaoMostrarMais.onclick = function () {
-                    nota.classList.toggle('expandida');
-                    botaoMostrarMais.innerText = nota.classList.contains('expandida') ? 'Mostrar menos' : 'Mostrar mais';
+            if (notaAtualId) {
+                // Editar nota existente
+                const nota = notas.find(n => n.id === notaAtualId);
+                if (nota) {
+                    nota.titulo = titulo;
+                    nota.conteudoOriginal = conteudo;
+                    notaAtualId = null; // Resetar após edição
+                    mostrarMensagem("Nota editada com sucesso!");
+                }
+            } else {
+                // Adicionar nova nota
+                const novaNota = {
+                    id: Date.now(),
+                    titulo,
+                    conteudoOriginal: conteudo,
+                    bloqueada: false,
+                    codigo: ""
                 };
-                nota.appendChild(botaoMostrarMais);
+                notas.push(novaNota);
+                mostrarMensagem("Nota adicionada com sucesso!");
+            }
+
+            atualizarListaDeNotas();
+            salvarNotas();
+
+            // Limpar campos
+            tituloInput.value = '';
+            conteudoInput.value = '';
+        }
+
+        function atualizarListaDeNotas() {
+            const notasContainer = document.getElementById('notasContainer');
+            notasContainer.innerHTML = ''; // Limpa a lista de notas antes de atualizar
+
+            notas.forEach(nota => {
+                const notaElement = document.createElement('div');
+                notaElement.className = 'nota';
+                const conteudoExibido = nota.bloqueada ? 'Conteúdo oculto' : nota.conteudoOriginal;
+                notaElement.innerHTML = `
+                    <h2>${nota.titulo}</h2>
+                    <p>${conteudoExibido}</p>
+                    <button onclick="prepararEdicaoNota(${nota.id})">Editar</button>
+                    <button onclick="removerNota(${nota.id})">Eliminar</button>
+                    <button onclick="bloquearNota(${nota.id})">${nota.bloqueada ? 'Desbloquear' : 'Bloquear'}</button>
+                    ${nota.bloqueada ? `
+                        <button onclick="alterarCodigo(${nota.id})">Alterar Código</button>
+                    ` : ''}
+                `;
+                notasContainer.appendChild(notaElement);
+            });
+        }
+
+        function prepararEdicaoNota(id) {
+            const nota = notas.find(n => n.id === id);
+            if (!nota) return;
+
+            if (nota.bloqueada) {
+                const codigoInput = prompt("Insira o código da nota para editar:");
+                if (codigoInput !== nota.codigo) {
+                    alert("Código incorreto! Tente novamente.");
+                    return;
+                }
+            }
+
+            // Preencher campos de título e conteúdo para edição
+            const tituloInput = document.getElementById('tituloInput');
+            const conteudoInput = document.getElementById('conteudoInput');
+            tituloInput.value = nota.titulo;
+            conteudoInput.value = nota.conteudoOriginal;
+
+            notaAtualId = id; // Define a nota atual para edição
+        }
+
+        function removerNota(id) {
+            const nota = notas.find(n => n.id === id);
+            if (!nota) return;
+
+            if (nota.bloqueada) {
+                const codigoInput = prompt("Insira o código da nota para eliminar:");
+                if (codigoInput !== nota.codigo) {
+                    alert("Código incorreto! Tente novamente.");
+                    return;
+                }
+            }
+
+            if (confirm("Tem certeza que deseja eliminar esta nota?")) {
+                notas = notas.filter(n => n.id !== id);
+                atualizarListaDeNotas();
+                salvarNotas();
+                mostrarMensagem("Nota eliminada com sucesso!");
             }
         }
 
-        // Chame `adicionarNota()` e as outras funções conforme necessário no resto do código
+        function bloquearNota(id) {
+            const nota = notas.find(n => n.id === id);
+            if (!nota) return;
+
+            if (nota.bloqueada) {
+                // Desbloquear
+                const codigoInput = prompt("Insira o código para desbloquear a nota:");
+                if (codigoInput !== nota.codigo) {
+                    alert("Código incorreto! Tente novamente.");
+                    return;
+                }
+                nota.bloqueada = false;
+                nota.codigo = "";
+                atualizarListaDeNotas();
+                salvarNotas();
+                mostrarMensagem("Nota desbloqueada com sucesso!");
+            } else {
+                // Bloquear
+                const codigo = prompt("Defina um código para bloquear a nota (4-12 caracteres):");
+                if (!codigo) {
+                    alert("Bloqueio cancelado.");
+                    return;
+                }
+                if (codigo.length < 4 || codigo.length > 12) {
+                    alert("O código deve ter entre 4 e 12 caracteres.");
+                    return;
+                }
+                nota.bloqueada = true;
+                nota.codigo = codigo;
+                atualizarListaDeNotas();
+                salvarNotas();
+                mostrarMensagem("Nota bloqueada com sucesso!");
+            }
+        }
+
+        function alterarCodigo(id) {
+            const nota = notas.find(n => n.id === id);
+            if (!nota || !nota.bloqueada) return;
+
+            const codigoInput = prompt("Insira o código atual da nota:");
+            if (codigoInput !== nota.codigo) {
+                alert("Código incorreto! Tente novamente.");
+                return;
+            }
+
+            const novoCodigo = prompt("Insira o novo código (4-12 caracteres):");
+            if (!novoCodigo || novoCodigo.length < 4 || novoCodigo.length > 12) {
+                alert("O novo código deve ter entre 4 e 12 caracteres.");
+                return;
+            }
+
+            nota.codigo = novoCodigo;
+            salvarNotas();
+            mostrarMensagem("Código alterado com sucesso!");
+        }
+
+        function salvarNotas() {
+            localStorage.setItem('notas', JSON.stringify(notas));
+        }
+
+        function mostrarMensagem(mensagem) {
+            const mensagemElement = document.getElementById('mensagem');
+            mensagemElement.textContent = mensagem;
+            mensagemElement.style.display = 'block';
+            setTimeout(() => {
+                mensagemElement.style.display = 'none';
+            }, 2000);
+        }
+
+        window.onload = carregarNotas;
     </script>
+</head>
+<body>
+    <header>
+        <h1>Minhas Notas</h1>
+    </header>
+
+    <div class="container">
+        <div class="nota-form">
+            <input type="text" id="tituloInput" placeholder="Título da nota">
+            <textarea id="conteudoInput" placeholder="Conteúdo da nota"></textarea>
+            <button onclick="adicionarOuEditarNota()">Salvar Nota</button>
+        </div>
+
+        <div class="notas-salvas">
+            <h2>Notas Salvas</h2>
+            <div class="notas" id="notasContainer"></div>
+        </div>
+    </div>
+
+    <div id="mensagem" class="mensagem"></div>
+
+    <footer>
+        <p>Organise as suas notas de forma simples e seguro.</p>
+    </footer>
 </body>
 </html>
